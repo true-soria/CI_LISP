@@ -39,8 +39,8 @@ typedef enum oper {
     RAND_OPER,
     PRINT_OPER,
     EQUAL_OPER,
-    SMALLER_OPER,
-    LARGER_OPER,
+    LESS_OPER,
+    GREATER_OPER,
     CUSTOM_OPER =255
 } OPER_TYPE;
 

@@ -29,8 +29,8 @@ char *funcNames[] = {
         "rand",
         "print",
         "equal",
-        "smaller",
-        "larger",
+        "less",
+        "greater",
         ""
 };
 
