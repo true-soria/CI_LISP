@@ -56,7 +56,7 @@ number:
 f_expr:
     LPAREN FUNC s_expr RPAREN {
         fprintf(stderr, "yacc: s_expr ::= LPAREN FUNC expr RPAREN\n");
-        $$ = createFunctionNode($2, $3, 0);
+        $$ = createFunctionNode($2, $3, NULL);
     }
     | LPAREN FUNC s_expr s_expr RPAREN {
         fprintf(stderr, "yacc: s_expr ::= LPAREN FUNC expr expr RPAREN\n");
