@@ -1,0 +1,34 @@
+/home/true/CLionProjects/CI_LISP/cmake-build-debug/cilisp
+
+> (pow 2.5 3)
+Double Type: 15.625000
+
+> (neg (abs (add 4 5.5)))
+Double Type: -9.500000
+
+> (sqrt (remainder 12.7 8.7))
+Double Type: 2.000000
+
+> 
+
+> (max (min 2 3) (sub 2 3))
+Int Type: 2
+
+> (log (exp (mult 1 1)))
+Double Type: 1.000000
+
+> (div 144 1.2)
+Double Type: 120.000000
+
+> (cbrt (exp2 3))
+Double Type: 2.000000
+
+> (hypot 3 6)
+Double Type: 6.708204
+
+> (hypot 3 4)
+Double Type: 5.000000
+
+> quit
+
+Process finished with exit code 0

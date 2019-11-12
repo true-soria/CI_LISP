@@ -104,4 +104,33 @@ RET_VAL evalFuncNode(FUNC_AST_NODE *funcNode);
 
 void printRetVal(RET_VAL val);
 
+// evalFuncNode helper methods
+
+RET_VAL helperNegOper(RET_VAL *op1);
+RET_VAL helperAbsOper(RET_VAL *op1);
+RET_VAL helperExpOper(RET_VAL *op1);
+RET_VAL helperSqrtOper(RET_VAL *op1);
+RET_VAL helperAddOper(RET_VAL *op1, RET_VAL *op2);
+RET_VAL helperSubOper(RET_VAL *op1, RET_VAL *op2);
+RET_VAL helperMultOper(RET_VAL *op1, RET_VAL *op2);
+RET_VAL helperDivOper(RET_VAL *op1, RET_VAL *op2);
+RET_VAL helperRemainderOper(RET_VAL *op1, RET_VAL *op2);
+RET_VAL helperLogOper(RET_VAL *op1);
+RET_VAL helperPowOper(RET_VAL *op1, RET_VAL *op2);
+RET_VAL helperMaxOper(RET_VAL *op1, RET_VAL *op2);
+RET_VAL helperMinOper(RET_VAL *op1, RET_VAL *op2);
+
+RET_VAL helperExp2Oper(RET_VAL *op1);
+RET_VAL helperCbrtOper(RET_VAL *op1);
+RET_VAL helperHypotOper(RET_VAL *op1, RET_VAL *op2);
+
+// functions of some later part
+
+/*RET_VAL helperReadOper(RET_VAL *op1, RET_VAL *op2);
+RET_VAL helperRandOper(RET_VAL *op1, RET_VAL *op2);
+RET_VAL helperPrintOper(RET_VAL *op1, RET_VAL *op2);
+RET_VAL helperEqualOper(RET_VAL *op1, RET_VAL *op2);
+RET_VAL helperLessOper(RET_VAL *op1, RET_VAL *op2);
+RET_VAL helperGreaterOper(RET_VAL *op1, RET_VAL *op2);*/
+
 #endif
