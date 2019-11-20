@@ -1,5 +1,6 @@
 #include "ciLisp.h"
 
+
 void yyerror(char *s) {
     fprintf(stderr, "\nERROR: %s\n", s);
     // note stderr that normally defaults to stdout, but can be redirected: ./src 2> src.log
@@ -64,6 +65,7 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type)
     // TODO set the AST_NODE's type, assign values to contained NUM_AST_NODE
 
     node->type = NUM_NODE_TYPE;
+    node->parent = NULL;
 
     switch (type)
     {
@@ -109,15 +111,94 @@ AST_NODE *createFunctionNode(char *funcName, AST_NODE *op1, AST_NODE *op2)
 
     node->type = FUNC_NODE_TYPE;
     node->data.function.oper = resolveFunc(funcName);
+    node->parent = NULL;
 
     // later: if oper is CUSTOM_OPER store funcName to ident
 
     free(funcName);
+
+    // now adds this node as parent of op1 and op2
     node->data.function.op1 = op1;
-    node->data.function.op2 = op2;
+    op1->parent = node;
+
+    if (op2 != NULL)
+    {
+        node->data.function.op2 = op2;
+        op2->parent = node;
+    }
 
     return node;
 }
+
+AST_NODE *createSymbolNode(char *ident)
+{
+    AST_NODE *node;
+    size_t nodeSize;
+
+    // allocate space (or error)
+    nodeSize = sizeof(AST_NODE);
+    if ((node = calloc(nodeSize, 1)) == NULL)
+        yyerror("Memory allocation failed!");
+
+    node->type = SYMBOL_NODE_TYPE;
+    node->parent = NULL;
+//    node->data.symbol.ident = calloc(strlen(ident), 1);
+//    strcpy(node->data.symbol.ident, ident);
+    node->data.symbol.ident = ident;
+//    free(ident);
+
+    return node;
+}
+
+AST_NODE *linkASTtoLetList(SYMBOL_TABLE_NODE *letList, AST_NODE *op)
+{
+    op->symbolTable = letList;
+
+    SYMBOL_TABLE_NODE *node = letList;
+
+    // Make all symbol table value's parents this s-expression
+    while (node != NULL)
+    {
+         node->val->parent = op;
+        node = node->next;
+    }
+
+    return op;
+
+}
+
+/*
+ * Creates one variable node that will later be linked to a list
+ */
+SYMBOL_TABLE_NODE *createSymbolTableNode(char *ident, AST_NODE *val)
+{
+    SYMBOL_TABLE_NODE *node;
+    size_t nodeSize;
+
+    // allocate space (or error)
+    nodeSize = sizeof(SYMBOL_TABLE_NODE);
+    if ((node = calloc(nodeSize, 1)) == NULL)
+        yyerror("Memory allocation failed!");
+
+    // copy identifier name
+//    node->ident = calloc(strlen(ident), 1);
+//    strcpy(node->ident, ident);
+    node->ident = ident;
+//    free(ident);
+
+    // node val points to the s-expression that follows
+    node->val = val;
+    node->next = NULL;
+
+    return node;
+}
+
+SYMBOL_TABLE_NODE *linkLetSection(SYMBOL_TABLE_NODE *head, SYMBOL_TABLE_NODE *newVal)
+{
+    newVal->next = head;
+    return newVal;
+}
+
 
 // Called after execution is done on the base of the tree.
 // (see the program production in ciLisp.y)
@@ -125,6 +206,8 @@ AST_NODE *createFunctionNode(char *funcName, AST_NODE *op1, AST_NODE *op2)
 // You'll need to update and expand freeNode as the project develops.
 void freeNode(AST_NODE *node)
 {
+    // TODO time to expand (maybe?)
+
     if (!node)
         return;
 
@@ -151,11 +234,10 @@ void freeNode(AST_NODE *node)
 RET_VAL eval(AST_NODE *node)
 {
     if (!node)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {INT_TYPE, NAN}; // see NUM_AST_NODE, because RET_VAL is just an alternative name for it.
+    RET_VAL result = {DOUBLE_TYPE, NAN}; // see NUM_AST_NODE, because RET_VAL is just an alternative name for it.
 
-    // TODO complete the switch.
     // Make calls to other eval functions based on node type.
     // Use the results of those calls to populate result.
     switch (node->type)
@@ -165,6 +247,10 @@ RET_VAL eval(AST_NODE *node)
             break;
         case NUM_NODE_TYPE:
             result = evalNumNode(&node->data.number);
+            break;
+        case SYMBOL_NODE_TYPE:
+            // TODO make an eval function for Symbol Nodes - done
+            result = evalSymbolNode(node);
             break;
         default:
             yyerror("Invalid AST_NODE_TYPE, probably invalid writes somewhere!");
@@ -178,9 +264,9 @@ RET_VAL eval(AST_NODE *node)
 RET_VAL evalNumNode(NUM_AST_NODE *numNode)
 {
     if (!numNode)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {INT_TYPE, NAN};
+    RET_VAL result = {DOUBLE_TYPE, NAN};
 
     // TODO populate result with the values stored in the node.
     // SEE: AST_NODE, AST_NODE_TYPE, NUM_AST_NODE
@@ -206,9 +292,9 @@ RET_VAL evalNumNode(NUM_AST_NODE *numNode)
 RET_VAL evalFuncNode(FUNC_AST_NODE *funcNode)
 {
     if (!funcNode)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {INT_TYPE, NAN};
+    RET_VAL result = {DOUBLE_TYPE, NAN};
 
     // TODO populate result with the result of running the function on its operands.
     // SEE: AST_NODE, AST_NODE_TYPE, FUNC_AST_NODE
@@ -310,6 +396,36 @@ RET_VAL evalFuncNode(FUNC_AST_NODE *funcNode)
     return result;
 }
 
+RET_VAL evalSymbolNode(AST_NODE *symbolNode)
+{
+
+    if (!symbolNode)
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+
+    RET_VAL result = {DOUBLE_TYPE, NAN};
+
+    char *symbol = symbolNode->data.symbol.ident;
+    AST_NODE *currNode = symbolNode;
+    SYMBOL_TABLE_NODE *currTable;
+
+    while (currNode != NULL)
+    {
+        currTable = currNode->symbolTable;
+        while (currTable != NULL)
+        {
+            if (strcmp(symbol, currTable->ident) == 0)
+            {
+                result = eval(currTable->val);
+                return result;
+            }
+            currTable = currTable->next;
+        }
+        currNode = currNode->parent;
+    }
+
+    return result;
+}
+
 // prints the type and value of a RET_VAL
 void printRetVal(RET_VAL val)
 {
@@ -338,9 +454,9 @@ RET_VAL helperNegOper(RET_VAL *op1)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {INT_TYPE, NAN};
+    RET_VAL result = {DOUBLE_TYPE, NAN};
 
     switch (op1->type)
     {
@@ -363,9 +479,9 @@ RET_VAL helperAbsOper(RET_VAL *op1)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {INT_TYPE, NAN};
+    RET_VAL result = {DOUBLE_TYPE, NAN};
 
     switch (op1->type)
     {
@@ -388,7 +504,7 @@ RET_VAL helperExpOper(RET_VAL *op1)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
     RET_VAL result = {DOUBLE_TYPE, NAN};
 
@@ -412,7 +528,7 @@ RET_VAL helperSqrtOper(RET_VAL *op1)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
     RET_VAL result = {DOUBLE_TYPE, NAN};
 
@@ -436,9 +552,9 @@ RET_VAL helperAddOper(RET_VAL *op1, RET_VAL *op2)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {INT_TYPE, NAN};
+    RET_VAL result = {DOUBLE_TYPE, NAN};
 
     switch (op1->type)
     {
@@ -482,9 +598,9 @@ RET_VAL helperSubOper(RET_VAL *op1, RET_VAL *op2)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {INT_TYPE, NAN};
+    RET_VAL result = {DOUBLE_TYPE, NAN};
 
     switch (op1->type)
     {
@@ -528,9 +644,9 @@ RET_VAL helperMultOper(RET_VAL *op1, RET_VAL *op2)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {INT_TYPE, NAN};
+    RET_VAL result = {DOUBLE_TYPE, NAN};
 
     switch (op1->type)
     {
@@ -574,9 +690,9 @@ RET_VAL helperDivOper(RET_VAL *op1, RET_VAL *op2)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {INT_TYPE, NAN};
+    RET_VAL result = {DOUBLE_TYPE, NAN};
 
     switch (op1->type)
     {
@@ -620,9 +736,9 @@ RET_VAL helperRemainderOper(RET_VAL *op1, RET_VAL *op2)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {INT_TYPE, NAN};
+    RET_VAL result = {DOUBLE_TYPE, NAN};
 
     switch (op1->type)
     {
@@ -666,7 +782,7 @@ RET_VAL helperLogOper(RET_VAL *op1)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
     RET_VAL result = {DOUBLE_TYPE, NAN};
 
@@ -690,9 +806,9 @@ RET_VAL helperPowOper(RET_VAL *op1, RET_VAL *op2)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {INT_TYPE, NAN};
+    RET_VAL result = {DOUBLE_TYPE, NAN};
 
     switch (op1->type)
     {
@@ -736,9 +852,9 @@ RET_VAL helperMaxOper(RET_VAL *op1, RET_VAL *op2)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {INT_TYPE, NAN};
+    RET_VAL result = {DOUBLE_TYPE, NAN};
 
     switch (op1->type)
     {
@@ -782,9 +898,9 @@ RET_VAL helperMinOper(RET_VAL *op1, RET_VAL *op2)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {INT_TYPE, NAN};
+    RET_VAL result = {DOUBLE_TYPE, NAN};
 
     switch (op1->type)
     {
@@ -828,7 +944,7 @@ RET_VAL helperExp2Oper(RET_VAL *op1)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
     RET_VAL result = {DOUBLE_TYPE, NAN};
 
@@ -852,7 +968,7 @@ RET_VAL helperCbrtOper(RET_VAL *op1)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
     RET_VAL result = {DOUBLE_TYPE, NAN};
 
@@ -876,7 +992,7 @@ RET_VAL helperHypotOper(RET_VAL *op1, RET_VAL *op2)
 {
 
     if (!op1)
-        return (RET_VAL){INT_TYPE, NAN};
+        return (RET_VAL){DOUBLE_TYPE, NAN};
 
     RET_VAL result = {DOUBLE_TYPE, NAN};
 

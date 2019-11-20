@@ -51,7 +51,8 @@ OPER_TYPE resolveFunc(char *);
 // You will expand this enum as you build the project.
 typedef enum {
     NUM_NODE_TYPE,
-    FUNC_NODE_TYPE
+    FUNC_NODE_TYPE,
+    SYMBOL_NODE_TYPE
 } AST_NODE_TYPE;
 
 // Types of numeric values
@@ -82,13 +83,33 @@ typedef struct {
     struct ast_node *op2;
 } FUNC_AST_NODE;
 
+// Symbol table node chain for storing values of variables to a knowledge base
+// CHAIN OF NODES
+
+typedef struct symbol_table_node {
+    char *ident;
+    struct ast_node *val;
+    struct symbol_table_node *next;
+} SYMBOL_TABLE_NODE;
+
+// Symbol Abstract Syntax Tree Node. Node to store a defined variable.
+
+typedef struct symbol_ast_node {
+    char *ident;
+} SYMBOL_AST_NODE;
+
+
+
 // Generic Abstract Syntax Tree node. Stores the type of node,
 // and reference to the corresponding specific node (initially a number or function call).
 typedef struct ast_node {
     AST_NODE_TYPE type;
+    SYMBOL_TABLE_NODE *symbolTable;
+    struct ast_node *parent;
     union {
         NUM_AST_NODE number;
         FUNC_AST_NODE function;
+        SYMBOL_AST_NODE symbol;
     } data;
 } AST_NODE;
 
@@ -96,11 +117,23 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type);
 
 AST_NODE *createFunctionNode(char *funcName, AST_NODE *op1, AST_NODE *op2);
 
+AST_NODE *createSymbolNode(char *ident);
+
+AST_NODE *linkASTtoLetList(SYMBOL_TABLE_NODE *letList, AST_NODE *op);
+
+SYMBOL_TABLE_NODE *createSymbolTableNode(char *ident, AST_NODE *val);
+
+SYMBOL_TABLE_NODE *linkLetSection(SYMBOL_TABLE_NODE *head, SYMBOL_TABLE_NODE * newVal);
+
+
+
 void freeNode(AST_NODE *node);
 
 RET_VAL eval(AST_NODE *node);
 RET_VAL evalNumNode(NUM_AST_NODE *numNode);
 RET_VAL evalFuncNode(FUNC_AST_NODE *funcNode);
+
+RET_VAL evalSymbolNode(AST_NODE *symbolNode);
 
 void printRetVal(RET_VAL val);
 

@@ -1,0 +1,20 @@
+/home/true/CLionProjects/CI_LISP/cmake-build-debug/cilisp
+
+> (add ((let (abcd 1)) (sub 3 abcd)) 4)
+Int Type: 6
+
+> (mult ((let (a 1) (b 2)) (add a b)) (sqrt 2))
+Double Type: 4.242641
+
+> (add ((let (a ((let (b 2)) (mult b (sqrt 10))))) (div a 2)) ((let (c 5)) (sqrt c)))
+Double Type: 5.398346
+
+> ((let (first (sub 5 1)) (second 2)) (add (pow 2 first) (sqrt second)))
+Double Type: 17.414214
+
+> ((let (a ((let (c 3) (d 4)) (mult c d)))) (sqrt a))
+Double Type: 3.464102
+
+> quit
+
+Process finished with exit code 0
