@@ -85,6 +85,8 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type)
 
     node->type = NUM_NODE_TYPE;
     node->parent = NULL;
+    // don't forget you added this line
+    node->next = NULL;
 
     switch (type)
     {
@@ -111,7 +113,7 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type)
 //      - An OPER_TYPE (the enum identifying the specific function being called)
 //      - 2 AST_NODEs, the operands
 // SEE: AST_NODE, FUNC_AST_NODE, AST_NODE_TYPE.
-AST_NODE *createFunctionNode(char *funcName, AST_NODE *op1, AST_NODE *op2)
+AST_NODE *createFunctionNode(char *funcName, AST_NODE *op1)
 {
     AST_NODE *node;
     size_t nodeSize;
@@ -128,22 +130,26 @@ AST_NODE *createFunctionNode(char *funcName, AST_NODE *op1, AST_NODE *op2)
     // For CUSTOM_OPER functions, you should simply assign the "ident" pointer to the passed in funcName.
     // For functions other than CUSTOM_OPER, you should free the funcName after you're assigned the OPER_TYPE.
 
+    // TODO time to fix all of this... done
+
+
     node->type = FUNC_NODE_TYPE;
     node->data.function.oper = resolveFunc(funcName);
     node->parent = NULL;
+    node->next = NULL;
 
     // later: if oper is CUSTOM_OPER store funcName to ident
-
     free(funcName);
 
     // now adds this node as parent of op1 and op2
-    node->data.function.op1 = op1;
-    op1->parent = node;
+    node->data.function.opList = op1;
 
-    if (op2 != NULL)
+    // add parent to all op nodes
+    AST_NODE *currOp = op1;
+    while (currOp != NULL)
     {
-        node->data.function.op2 = op2;
-        op2->parent = node;
+        currOp->parent = node;
+        currOp = currOp->next;
     }
 
     return node;
@@ -161,12 +167,17 @@ AST_NODE *createSymbolNode(char *ident)
 
     node->type = SYMBOL_NODE_TYPE;
     node->parent = NULL;
-//    node->data.symbol.ident = calloc(strlen(ident), 1);
-//    strcpy(node->data.symbol.ident, ident);
     node->data.symbol.ident = ident;
-//    free(ident);
+    node->next = NULL;
 
     return node;
+}
+
+AST_NODE *linkSexprToSexprList(AST_NODE *newNode, AST_NODE *nodeChainHead)
+{
+    // TODO new function: Attaches S-expr to the rest of the S-expr list - done
+    newNode->next = nodeChainHead;
+    return newNode;
 }
 
 AST_NODE *linkASTtoLetList(SYMBOL_TABLE_NODE *letList, AST_NODE *op)
@@ -224,11 +235,13 @@ SYMBOL_TABLE_NODE *linkLetSection(SYMBOL_TABLE_NODE *head, SYMBOL_TABLE_NODE *ne
 void freeNode(AST_NODE *node)
 {
     // TODO time to expand (maybe?)
-    //  1) definitely not fixed for symbol nodes
     //  2) need to fix symbol table too - works (probably)
+    //  3) fukcign... okay i guess op isn't a thing anymore - done i think
 
     if (!node)
         return;
+
+    AST_NODE *currOp;
 
     switch (node->type)
     {
@@ -236,9 +249,13 @@ void freeNode(AST_NODE *node)
             break;
 
         case FUNC_NODE_TYPE:
-            // Recursive calls to free child nodes
-            freeNode(node->data.function.op1);
-            freeNode(node->data.function.op2);
+            // Recursive calls to free child Ops
+            currOp = node->data.function.opList;
+            while (currOp != NULL)
+            {
+                freeNode(currOp);
+                currOp = currOp->next;
+            }
 
             // Free up identifier string if necessary
             if (node->data.function.oper == CUSTOM_OPER) {
@@ -248,7 +265,7 @@ void freeNode(AST_NODE *node)
 
         case SYMBOL_NODE_TYPE:
             free(node->data.symbol.ident);
-    }
+    } // END of switch statement
 
     // free associated symbol table node chain
     SYMBOL_TABLE_NODE *currNode = node->symbolTable;
@@ -338,86 +355,87 @@ RET_VAL evalFuncNode(FUNC_AST_NODE *funcNode)
     // SEE: AST_NODE, AST_NODE_TYPE, FUNC_AST_NODE
 
 
+    // TODO next to fix
+
     RET_VAL op1;
-    RET_VAL op2;
 
     switch (funcNode->oper)
     {
         case NEG_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             result = helperNegOper(&op1);
             break;
         case ABS_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             result = helperAbsOper(&op1);
             break;
         case EXP_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             result = helperExpOper(&op1);
             break;
         case SQRT_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             result = helperSqrtOper(&op1);
             break;
         case ADD_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             op2 = eval(funcNode->op2);
             result = helperAddOper(&op1, &op2);
             break;
         case SUB_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             op2 = eval(funcNode->op2);
             result = helperSubOper(&op1, &op2);
             break;
         case MULT_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             op2 = eval(funcNode->op2);
             result = helperMultOper(&op1, &op2);
             break;
         case DIV_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             op2 = eval(funcNode->op2);
             result = helperDivOper(&op1, &op2);
             break;
         case REMAINDER_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             op2 = eval(funcNode->op2);
             result = helperRemainderOper(&op1, &op2);
             break;
         case LOG_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             result = helperLogOper(&op1);
             break;
         case POW_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             op2 = eval(funcNode->op2);
             result = helperPowOper(&op1, &op2);
             break;
         case MAX_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             op2 = eval(funcNode->op2);
             result = helperMaxOper(&op1, &op2);
             break;
         case MIN_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             op2 = eval(funcNode->op2);
             result = helperMinOper(&op1, &op2);
             break;
         case EXP2_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             result = helperExp2Oper(&op1);
             break;
         case CBRT_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             result = helperCbrtOper(&op1);
             break;
         case HYPOT_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             op2 = eval(funcNode->op2);
             result = helperHypotOper(&op1, &op2);
             break;
         case PRINT_OPER:
-            op1 = eval(funcNode->op1);
+            op1 = eval(funcNode->opList);
             result = helperPrintOper(&op1);
             break;
             // how did we get here?
@@ -1104,7 +1122,7 @@ RET_VAL helperHypotOper(RET_VAL *op1, RET_VAL *op2)
 
 RET_VAL helperPrintOper(RET_VAL *op1)
 {
-    // TODO most recent helper function yes I put it at the bottom.
+    // Most recent helper function yes I put it at the bottom.
 
     if (!op1)
     {

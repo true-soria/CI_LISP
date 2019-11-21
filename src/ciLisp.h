@@ -83,8 +83,7 @@ typedef NUM_AST_NODE RET_VAL;
 typedef struct {
     OPER_TYPE oper;
     char* ident; // only needed for custom functions
-    struct ast_node *op1;
-    struct ast_node *op2;
+    struct ast_node *opList;
 } FUNC_AST_NODE;
 
 // Symbol table node chain for storing values of variables to a knowledge base
@@ -116,14 +115,18 @@ typedef struct ast_node {
         FUNC_AST_NODE function;
         SYMBOL_AST_NODE symbol;
     } data;
+    struct ast_node *next;
 } AST_NODE;
 
 AST_NODE *createNumberNode(double value, NUM_TYPE type);
 
-AST_NODE *createFunctionNode(char *funcName, AST_NODE *op1, AST_NODE *op2);
+AST_NODE *createFunctionNode(char *funcName, AST_NODE *op1);
 
 // Creastes symbol type AST node
 AST_NODE *createSymbolNode(char *ident);
+
+// Attaches S-expr to the rest of the S-expr list
+AST_NODE *linkSexprToSexprList(AST_NODE *newNode, AST_NODE *nodeChainHead);
 
 // Attaches symbol table node chain to parent AST node
 AST_NODE *linkASTtoLetList(SYMBOL_TABLE_NODE *letList, AST_NODE *op);
@@ -146,8 +149,9 @@ RET_VAL evalSymbolNode(AST_NODE *symbolNode);
 void printRetVal(RET_VAL val);
 
 // evalFuncNode helper methods
+// TODO ALL of these need to be redone
 
-RET_VAL helperNegOper(RET_VAL *op1);
+RET_VAL helperNegOper(AST_NODE *op1);
 RET_VAL helperAbsOper(RET_VAL *op1);
 RET_VAL helperExpOper(RET_VAL *op1);
 RET_VAL helperSqrtOper(RET_VAL *op1);
