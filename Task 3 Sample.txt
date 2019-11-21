@@ -1,0 +1,37 @@
+/home/true/CLionProjects/CI_LISP/cmake-build-debug/cilisp
+
+> ((let (int a 1.25))(add a 1))
+lex: LPAREN
+lex: LPAREN
+lex: LET
+lex: LPAREN
+lex: TYPE sval = int
+lex: SYMBOL sval = a
+lex: DOUBLE dval = 1.250000
+yacc: number ::= DOUBLE
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: let_elem ::= LPAREN TYPE SYMBOL s_expr RPAREN
+yacc: let_list ::= LET let_elem
+lex: RPAREN
+WARNING: precision loss in the assignment for variable "a"
+Int Type: 2
+
+> yacc: let_section ::= LPAREN let_list RPAREN
+lex: LPAREN
+lex: FUNC sval = add
+lex: SYMBOL sval = a
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: INT dval = 1.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC expr expr RPAREN
+lex: RPAREN
+yacc: s_expr ::= LPAREN let_section s_expr RPARENlex: EOL
+yacc: program ::= s_expr EOL
+quit
+yacc: s_expr ::= QUIT
+
+Process finished with exit code 0

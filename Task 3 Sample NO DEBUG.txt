@@ -1,0 +1,22 @@
+/home/true/CLionProjects/CI_LISP/cmake-build-debug/cilisp
+
+> ((let (int a 1.25))(add a 1))
+WARNING: precision loss in the assignment for variable "a"
+Int Type: 2
+
+> quit
+
+Process finished with exit code 0
+
+
+/home/true/CLionProjects/CI_LISP/cmake-build-debug/cilisp
+
+> ((let (double a 1))(add a 1))
+Double Type: 2.000000
+
+> ((let (double a 1))(add a 1.25))
+Double Type: 2.250000
+
+> quit
+
+Process finished with exit code 0

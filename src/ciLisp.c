@@ -35,6 +35,12 @@ char *funcNames[] = {
         ""
 };
 
+char *numTypeNames[] = {
+        "int",
+        "double",
+        ""
+};
+
 OPER_TYPE resolveFunc(char *funcName)
 {
     int i = 0;
@@ -45,6 +51,19 @@ OPER_TYPE resolveFunc(char *funcName)
         i++;
     }
     return CUSTOM_OPER;
+}
+
+
+NUM_TYPE resolveNum(char *numName)
+{
+    int i = 0;
+    while (funcNames[i][0] != '\0')
+    {
+        if (strcmp(numTypeNames[i], numName) == 0)
+            return i;
+        i++;
+    }
+    return NO_TYPE;
 }
 
 // Called when an INT or DOUBLE token is encountered (see ciLisp.l and ciLisp.y).
@@ -62,7 +81,7 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type)
     if ((node = calloc(nodeSize, 1)) == NULL)
         yyerror("Memory allocation failed!");
 
-    // TODO set the AST_NODE's type, assign values to contained NUM_AST_NODE
+    // set the AST_NODE's type, assign values to contained NUM_AST_NODE
 
     node->type = NUM_NODE_TYPE;
     node->parent = NULL;
@@ -102,7 +121,7 @@ AST_NODE *createFunctionNode(char *funcName, AST_NODE *op1, AST_NODE *op2)
     if ((node = calloc(nodeSize, 1)) == NULL)
         yyerror("Memory allocation failed!");
 
-    // TODO set the AST_NODE's type, populate contained FUNC_AST_NODE
+    // set the AST_NODE's type, populate contained FUNC_AST_NODE
     // NOTE: you do not need to populate the "ident" field unless the function is type CUSTOM_OPER.
     // When you do have a CUSTOM_OPER, you do NOT need to allocate and strcpy here.
     // The funcName will be a string identifier for which space should be allocated in the tokenizer.
@@ -170,7 +189,7 @@ AST_NODE *linkASTtoLetList(SYMBOL_TABLE_NODE *letList, AST_NODE *op)
 /*
  * Creates one variable node that will later be linked to a list
  */
-SYMBOL_TABLE_NODE *createSymbolTableNode(char *ident, AST_NODE *val)
+SYMBOL_TABLE_NODE *createSymbolTableNode(char *type, char *ident, AST_NODE *val)
 {
     SYMBOL_TABLE_NODE *node;
     size_t nodeSize;
@@ -181,14 +200,12 @@ SYMBOL_TABLE_NODE *createSymbolTableNode(char *ident, AST_NODE *val)
         yyerror("Memory allocation failed!");
 
     // copy identifier name
-//    node->ident = calloc(strlen(ident), 1);
-//    strcpy(node->ident, ident);
     node->ident = ident;
-//    free(ident);
 
     // node val points to the s-expression that follows
     node->val = val;
     node->next = NULL;
+    node->val_type = resolveNum(type);
 
     return node;
 }
@@ -207,22 +224,44 @@ SYMBOL_TABLE_NODE *linkLetSection(SYMBOL_TABLE_NODE *head, SYMBOL_TABLE_NODE *ne
 void freeNode(AST_NODE *node)
 {
     // TODO time to expand (maybe?)
+    //  1) definitely not fixed for symbol nodes
+    //  2) need to fix symbol table too - works (probably)
 
     if (!node)
         return;
 
-    if (node->type == FUNC_NODE_TYPE)
+    switch (node->type)
     {
-        // Recursive calls to free child nodes
-        freeNode(node->data.function.op1);
-        freeNode(node->data.function.op2);
+        case NUM_NODE_TYPE:
+            break;
 
-        // Free up identifier string if necessary
-        if (node->data.function.oper == CUSTOM_OPER)
-        {
-            free(node->data.function.ident);
-        }
+        case FUNC_NODE_TYPE:
+            // Recursive calls to free child nodes
+            freeNode(node->data.function.op1);
+            freeNode(node->data.function.op2);
+
+            // Free up identifier string if necessary
+            if (node->data.function.oper == CUSTOM_OPER) {
+                free(node->data.function.ident);
+            }
+            break;
+
+        case SYMBOL_NODE_TYPE:
+            free(node->data.symbol.ident);
     }
+
+    // free associated symbol table node chain
+    SYMBOL_TABLE_NODE *currNode = node->symbolTable;
+    SYMBOL_TABLE_NODE *prevNode;
+    while (currNode !=NULL)
+    {
+        prevNode = currNode;
+        currNode = currNode->next;
+
+        free(prevNode->ident);
+        free(prevNode);
+    }
+
 
     free(node);
 }
@@ -249,7 +288,6 @@ RET_VAL eval(AST_NODE *node)
             result = evalNumNode(&node->data.number);
             break;
         case SYMBOL_NODE_TYPE:
-            // TODO make an eval function for Symbol Nodes - done
             result = evalSymbolNode(node);
             break;
         default:
@@ -268,7 +306,7 @@ RET_VAL evalNumNode(NUM_AST_NODE *numNode)
 
     RET_VAL result = {DOUBLE_TYPE, NAN};
 
-    // TODO populate result with the values stored in the node.
+    // populate result with the values stored in the node.
     // SEE: AST_NODE, AST_NODE_TYPE, NUM_AST_NODE
 
     result.type = numNode->type;
@@ -296,7 +334,7 @@ RET_VAL evalFuncNode(FUNC_AST_NODE *funcNode)
 
     RET_VAL result = {DOUBLE_TYPE, NAN};
 
-    // TODO populate result with the result of running the function on its operands.
+    // populate result with the result of running the function on its operands.
     // SEE: AST_NODE, AST_NODE_TYPE, FUNC_AST_NODE
 
 
@@ -416,6 +454,45 @@ RET_VAL evalSymbolNode(AST_NODE *symbolNode)
             if (strcmp(symbol, currTable->ident) == 0)
             {
                 result = eval(currTable->val);
+
+                // This whole block changes the returned result depending on the casted type of this symbol AST Node
+                switch (currTable->val_type)
+                {
+                    case NO_TYPE:
+                        return result;
+                    case INT_TYPE:
+                        switch (result.type)
+                        {
+                            case INT_TYPE:
+                                break;
+                            case DOUBLE_TYPE:
+                                printf("WARNING: precision loss in the assignment for variable \"%s\"\n", currTable->ident);
+                                result.type = INT_TYPE;
+                                result.value.ival = lround(result.value.dval);
+                                break;
+                            default:
+                                yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+                        }
+                        break;
+
+                    case DOUBLE_TYPE:
+                        switch (result.type)
+                        {
+                            case INT_TYPE:
+                                result.type = DOUBLE_TYPE;
+                                result.value.dval = (double) result.value.ival;
+                                break;
+                            case DOUBLE_TYPE:
+                                break;
+                            default:
+                                yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+                        }
+                        break;
+
+                    default:
+                        yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+                } // END of type cast adjustments
+
                 return result;
             }
             currTable = currTable->next;
@@ -429,7 +506,7 @@ RET_VAL evalSymbolNode(AST_NODE *symbolNode)
 // prints the type and value of a RET_VAL
 void printRetVal(RET_VAL val)
 {
-    // TODO print the type and value of the value passed in.
+    // print the type and value of the value passed in.
 
 
     switch (val.type)
@@ -461,10 +538,10 @@ RET_VAL helperNegOper(RET_VAL *op1)
     switch (op1->type)
     {
         case INT_TYPE:
+            result.type = INT_TYPE;
             result.value.ival = -op1->value.ival;
             break;
         case DOUBLE_TYPE:
-            result.type = DOUBLE_TYPE;
             result.value.dval = -op1->value.dval;
             break;
         default:
@@ -486,10 +563,10 @@ RET_VAL helperAbsOper(RET_VAL *op1)
     switch (op1->type)
     {
         case INT_TYPE:
+            result.type = INT_TYPE;
             result.value.ival = labs(op1->value.ival);
             break;
         case DOUBLE_TYPE:
-            result.type = DOUBLE_TYPE;
             result.value.dval = fabs(op1->value.dval);
             break;
         default:
@@ -562,10 +639,10 @@ RET_VAL helperAddOper(RET_VAL *op1, RET_VAL *op2)
             switch (op2->type)
             {
                 case INT_TYPE:
+                    result.type = INT_TYPE;
                     result.value.ival = op1->value.ival + op2->value.ival;
                     break;
                 case DOUBLE_TYPE:
-                    result.type = DOUBLE_TYPE;
                     result.value.dval = (double) op1->value.ival + op2->value.dval;
                     break;
                 default:
@@ -573,7 +650,6 @@ RET_VAL helperAddOper(RET_VAL *op1, RET_VAL *op2)
             }
             break;
         case DOUBLE_TYPE:
-            result.type = DOUBLE_TYPE;
             switch (op2->type)
             {
                 case INT_TYPE:
@@ -608,10 +684,10 @@ RET_VAL helperSubOper(RET_VAL *op1, RET_VAL *op2)
             switch (op2->type)
             {
                 case INT_TYPE:
+                    result.type = INT_TYPE;
                     result.value.ival = op1->value.ival - op2->value.ival;
                     break;
                 case DOUBLE_TYPE:
-                    result.type = DOUBLE_TYPE;
                     result.value.dval = (double) op1->value.ival - op2->value.dval;
                     break;
                 default:
@@ -619,7 +695,6 @@ RET_VAL helperSubOper(RET_VAL *op1, RET_VAL *op2)
             }
             break;
         case DOUBLE_TYPE:
-            result.type = DOUBLE_TYPE;
             switch (op2->type)
             {
                 case INT_TYPE:
@@ -654,10 +729,10 @@ RET_VAL helperMultOper(RET_VAL *op1, RET_VAL *op2)
             switch (op2->type)
             {
                 case INT_TYPE:
+                    result.type = INT_TYPE;
                     result.value.ival = op1->value.ival * op2->value.ival;
                     break;
                 case DOUBLE_TYPE:
-                    result.type = DOUBLE_TYPE;
                     result.value.dval = (double) op1->value.ival * op2->value.dval;
                     break;
                 default:
@@ -665,7 +740,6 @@ RET_VAL helperMultOper(RET_VAL *op1, RET_VAL *op2)
             }
             break;
         case DOUBLE_TYPE:
-            result.type = DOUBLE_TYPE;
             switch (op2->type)
             {
                 case INT_TYPE:
@@ -700,10 +774,10 @@ RET_VAL helperDivOper(RET_VAL *op1, RET_VAL *op2)
             switch (op2->type)
             {
                 case INT_TYPE:
+                    result.type = INT_TYPE;
                     result.value.ival = op1->value.ival / op2->value.ival;
                     break;
                 case DOUBLE_TYPE:
-                    result.type = DOUBLE_TYPE;
                     result.value.dval = (double) op1->value.ival / op2->value.dval;
                     break;
                 default:
@@ -711,7 +785,6 @@ RET_VAL helperDivOper(RET_VAL *op1, RET_VAL *op2)
             }
             break;
         case DOUBLE_TYPE:
-            result.type = DOUBLE_TYPE;
             switch (op2->type)
             {
                 case INT_TYPE:
@@ -746,10 +819,10 @@ RET_VAL helperRemainderOper(RET_VAL *op1, RET_VAL *op2)
             switch (op2->type)
             {
                 case INT_TYPE:
+                    result.type = INT_TYPE;
                     result.value.ival = op1->value.ival % op2->value.ival;
                     break;
                 case DOUBLE_TYPE:
-                    result.type = DOUBLE_TYPE;
                     result.value.dval = fmod((double) op1->value.ival, op2->value.dval);
                     break;
                 default:
@@ -757,7 +830,6 @@ RET_VAL helperRemainderOper(RET_VAL *op1, RET_VAL *op2)
             }
             break;
         case DOUBLE_TYPE:
-            result.type = DOUBLE_TYPE;
             switch (op2->type)
             {
                 case INT_TYPE:
@@ -816,10 +888,10 @@ RET_VAL helperPowOper(RET_VAL *op1, RET_VAL *op2)
             switch (op2->type)
             {
                 case INT_TYPE:
+                    result.type = INT_TYPE;
                     result.value.ival = lround(pow( (double) op1->value.ival, (double) op2->value.ival));
                     break;
                 case DOUBLE_TYPE:
-                    result.type = DOUBLE_TYPE;
                     result.value.dval = pow((double) op1->value.ival, op2->value.dval);
                     break;
                 default:
@@ -827,7 +899,6 @@ RET_VAL helperPowOper(RET_VAL *op1, RET_VAL *op2)
             }
             break;
         case DOUBLE_TYPE:
-            result.type = DOUBLE_TYPE;
             switch (op2->type)
             {
                 case INT_TYPE:
@@ -862,10 +933,10 @@ RET_VAL helperMaxOper(RET_VAL *op1, RET_VAL *op2)
             switch (op2->type)
             {
                 case INT_TYPE:
+                    result.type = INT_TYPE;
                     result.value.ival = lround( fmax( (double) op1->value.ival, (double) op2->value.ival));
                     break;
                 case DOUBLE_TYPE:
-                    result.type = DOUBLE_TYPE;
                     result.value.dval = fmax((double) op1->value.ival, op2->value.dval);
                     break;
                 default:
@@ -873,7 +944,6 @@ RET_VAL helperMaxOper(RET_VAL *op1, RET_VAL *op2)
             }
             break;
         case DOUBLE_TYPE:
-            result.type = DOUBLE_TYPE;
             switch (op2->type)
             {
                 case INT_TYPE:
@@ -908,10 +978,10 @@ RET_VAL helperMinOper(RET_VAL *op1, RET_VAL *op2)
             switch (op2->type)
             {
                 case INT_TYPE:
+                    result.type = INT_TYPE;
                     result.value.ival = lround( fmin( (double) op1->value.ival, (double) op2->value.ival));
                     break;
                 case DOUBLE_TYPE:
-                    result.type = DOUBLE_TYPE;
                     result.value.dval = fmin((double) op1->value.ival, op2->value.dval);
                     break;
                 default:
@@ -919,7 +989,6 @@ RET_VAL helperMinOper(RET_VAL *op1, RET_VAL *op2)
             }
             break;
         case DOUBLE_TYPE:
-            result.type = DOUBLE_TYPE;
             switch (op2->type)
             {
                 case INT_TYPE:
