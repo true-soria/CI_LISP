@@ -1,0 +1,133 @@
+/home/true/CLionProjects/CI_LISP/cmake-build-debug/cilisp
+
+> (add ((let (int abcd 1.25)) (print (sub 3 abcd))) 4)
+lex: LPAREN
+lex: FUNC sval = add
+lex: LPAREN
+lex: LPAREN
+lex: LET
+lex: LPAREN
+lex: TYPE sval = int
+lex: SYMBOL sval = abcd
+lex: DOUBLE dval = 1.250000
+yacc: number ::= DOUBLE
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: let_elem ::= LPAREN TYPE SYMBOL s_expr RPAREN
+yacc: let_list ::= LET let_elem
+lex: RPAREN
+yacc: let_section ::= LPAREN let_list RPAREN
+lex: LPAREN
+lex: FUNC sval = print
+lex: LPAREN
+lex: FUNC sval = sub
+lex: INT dval = 3.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: SYMBOL sval = abcd
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC expr expr RPAREN
+lex: RPAREN
+WARNING: precision loss in the assignment for variable "abcd"
+yacc: s_expr ::= LPAREN FUNC expr RPAREN
+print: Int Type: 2
+lex: RPAREN
+Int Type: 6
+
+yacc: s_expr ::= LPAREN let_section s_expr RPARENlex: INT dval = 4.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+> yacc: s_expr ::= LPAREN FUNC expr expr RPAREN
+lex: EOL
+yacc: program ::= s_expr EOL
+(add ((let (a ((let (b 2)) (print (mult b (sqrt 10)))))) (div a 2)) ((let (c 5)) (sqrt c)))
+lex: LPAREN
+lex: FUNC sval = add
+lex: LPAREN
+lex: LPAREN
+lex: LET
+lex: LPAREN
+lex: SYMBOL sval = a
+lex: LPAREN
+lex: LPAREN
+lex: LET
+lex: LPAREN
+lex: SYMBOL sval = b
+lex: INT dval = 2.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: let_elem ::= LPAREN SYMBOL s_expr RPAREN
+yacc: let_list ::= LET let_elem
+lex: RPAREN
+yacc: let_section ::= LPAREN let_list RPAREN
+lex: LPAREN
+lex: FUNC sval = print
+lex: LPAREN
+lex: FUNC sval = mult
+lex: SYMBOL sval = b
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: LPAREN
+lex: FUNC sval = sqrt
+lex: INT dval = 10.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC expr RPAREN
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC expr expr RPAREN
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC expr RPAREN
+lex: RPAREN
+yacc: s_expr ::= LPAREN let_section s_expr RPARENlex: RPAREN
+print: Double Type: 6.324555
+yacc: let_elem ::= LPAREN SYMBOL s_expr RPAREN
+yacc: let_list ::= LET let_elem
+Double Type: 5.398346
+lex: RPAREN
+
+yacc: let_section ::= LPAREN let_list RPAREN
+> lex: LPAREN
+lex: FUNC sval = div
+lex: SYMBOL sval = a
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: INT dval = 2.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC expr expr RPAREN
+lex: RPAREN
+yacc: s_expr ::= LPAREN let_section s_expr RPARENlex: LPAREN
+lex: LPAREN
+lex: LET
+lex: LPAREN
+lex: SYMBOL sval = c
+lex: INT dval = 5.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: let_elem ::= LPAREN SYMBOL s_expr RPAREN
+yacc: let_list ::= LET let_elem
+lex: RPAREN
+yacc: let_section ::= LPAREN let_list RPAREN
+lex: LPAREN
+lex: FUNC sval = sqrt
+lex: SYMBOL sval = c
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC expr RPAREN
+lex: RPAREN
+yacc: s_expr ::= LPAREN let_section s_expr RPARENlex: RPAREN
+yacc: s_expr ::= LPAREN FUNC expr expr RPAREN
+lex: EOL
+yacc: program ::= s_expr EOL
+quit
+yacc: s_expr ::= QUIT
+
+Process finished with exit code 0

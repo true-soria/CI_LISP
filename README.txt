@@ -15,3 +15,9 @@ Task 1 Complete
  - sample runs included
  - NOTE: instances of "{INT_TYPE, NAN}" were changed to "{DOUBLE_TYPE, NAN}".
    The rest of the code was changed accordingly, probably.
+
+11/20/19
+Task 4 Complete
+ - Tested a couple times with and without debugging statements
+ - introduced another helper method for it. It's at the bottom. (with a TODO)
+ - sample runs included

@@ -416,11 +416,13 @@ RET_VAL evalFuncNode(FUNC_AST_NODE *funcNode)
             op2 = eval(funcNode->op2);
             result = helperHypotOper(&op1, &op2);
             break;
-
+        case PRINT_OPER:
+            op1 = eval(funcNode->op1);
+            result = helperPrintOper(&op1);
+            break;
             // how did we get here?
         case READ_OPER:
         case RAND_OPER:
-        case PRINT_OPER:
         case EQUAL_OPER:
         case LESS_OPER:
         case GREATER_OPER:
@@ -1098,4 +1100,30 @@ RET_VAL helperHypotOper(RET_VAL *op1, RET_VAL *op2)
     }
 
     return result;
+}
+
+RET_VAL helperPrintOper(RET_VAL *op1)
+{
+    // TODO most recent helper function yes I put it at the bottom.
+
+    if (!op1)
+    {
+        printf("Warning: This operation did not retrieve a number");
+        return (RET_VAL) {DOUBLE_TYPE, NAN};
+    }
+
+    printf("print: ");
+    switch (op1->type)
+    {
+        case INT_TYPE:
+            printf("Int Type: %ld\n", op1->value.ival);
+            break;
+        case DOUBLE_TYPE:
+            printf("Double Type: %lf\n", op1->value.dval);
+            break;
+        default:
+            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+    }
+
+    return *op1;
 }

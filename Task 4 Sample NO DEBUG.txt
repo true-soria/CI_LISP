@@ -1,0 +1,14 @@
+/home/true/CLionProjects/CI_LISP/cmake-build-debug/cilisp
+
+> (add ((let (int abcd 1.25)) (print (sub 3 abcd))) 4)
+WARNING: precision loss in the assignment for variable "abcd"
+print: Int Type: 2
+Int Type: 6
+
+> (add ((let (a ((let (b 2)) (print (mult b (sqrt 10)))))) (div a 2)) ((let (c 5)) (sqrt c)))
+print: Double Type: 6.324555
+Double Type: 5.398346
+
+> quit
+
+Process finished with exit code 0

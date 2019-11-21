@@ -164,12 +164,13 @@ RET_VAL helperMinOper(RET_VAL *op1, RET_VAL *op2);
 RET_VAL helperExp2Oper(RET_VAL *op1);
 RET_VAL helperCbrtOper(RET_VAL *op1);
 RET_VAL helperHypotOper(RET_VAL *op1, RET_VAL *op2);
+RET_VAL helperPrintOper(RET_VAL *op1);
+
 
 // functions of some later part
 
 /*RET_VAL helperReadOper(RET_VAL *op1, RET_VAL *op2);
 RET_VAL helperRandOper(RET_VAL *op1, RET_VAL *op2);
-RET_VAL helperPrintOper(RET_VAL *op1, RET_VAL *op2);
 RET_VAL helperEqualOper(RET_VAL *op1, RET_VAL *op2);
 RET_VAL helperLessOper(RET_VAL *op1, RET_VAL *op2);
 RET_VAL helperGreaterOper(RET_VAL *op1, RET_VAL *op2);*/
