@@ -152,23 +152,24 @@ void printRetVal(RET_VAL val);
 // TODO ALL of these need to be redone
 
 RET_VAL helperNegOper(AST_NODE *op1);
-RET_VAL helperAbsOper(RET_VAL *op1);
-RET_VAL helperExpOper(RET_VAL *op1);
-RET_VAL helperSqrtOper(RET_VAL *op1);
-RET_VAL helperAddOper(RET_VAL *op1, RET_VAL *op2);
-RET_VAL helperSubOper(RET_VAL *op1, RET_VAL *op2);
-RET_VAL helperMultOper(RET_VAL *op1, RET_VAL *op2);
-RET_VAL helperDivOper(RET_VAL *op1, RET_VAL *op2);
-RET_VAL helperRemainderOper(RET_VAL *op1, RET_VAL *op2);
-RET_VAL helperLogOper(RET_VAL *op1);
-RET_VAL helperPowOper(RET_VAL *op1, RET_VAL *op2);
-RET_VAL helperMaxOper(RET_VAL *op1, RET_VAL *op2);
-RET_VAL helperMinOper(RET_VAL *op1, RET_VAL *op2);
+RET_VAL helperAbsOper(AST_NODE *op1);
+RET_VAL helperExpOper(AST_NODE *op1);
+RET_VAL helperSqrtOper(AST_NODE *op1);
+RET_VAL helperAddOper(AST_NODE *op1);
+RET_VAL helperSubOper(AST_NODE *op1);
+RET_VAL helperMultOper(AST_NODE *op1);
+RET_VAL helperDivOper(AST_NODE *op1);
+RET_VAL helperRemainderOper(AST_NODE *op1);
+RET_VAL helperLogOper(AST_NODE *op1);
+RET_VAL helperPowOper(AST_NODE *op1);
+RET_VAL helperMaxOper(AST_NODE *op1);
+RET_VAL helperMinOper(AST_NODE *op1);
 
-RET_VAL helperExp2Oper(RET_VAL *op1);
-RET_VAL helperCbrtOper(RET_VAL *op1);
-RET_VAL helperHypotOper(RET_VAL *op1, RET_VAL *op2);
-RET_VAL helperPrintOper(RET_VAL *op1);
+RET_VAL helperExp2Oper(AST_NODE *op1);
+RET_VAL helperCbrtOper(AST_NODE *op1);
+RET_VAL helperHypotOper(AST_NODE *op1);
+
+RET_VAL helperPrintOper(AST_NODE *op1);
 
 
 // functions of some later part

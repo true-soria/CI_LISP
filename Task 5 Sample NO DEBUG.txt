@@ -1,0 +1,48 @@
+/home/true/CLionProjects/CI_LISP/cmake-build-debug/cilisp
+
+> (max (print 1 (add 2 3.4) (sub 3 4 5) (div 16 4 2)) 10 2)
+print: Int Type: 1
+print: Double Type: 5.400000
+print: Int Type: -6
+print: Int Type: 2
+WARNING: only the first item in this list is returned.
+Int Type: 10
+
+> (mult (print 1 (add 2 3.4) (sub 3 4 5) (div 16 4 2)) 10 2)
+print: Int Type: 1
+print: Double Type: 5.400000
+print: Int Type: -6
+print: Int Type: 2
+WARNING: only the first item in this list is returned.
+Int Type: 20
+
+> (mult 1 (add 2 3.4) (sub 3 4 5) (div 16 4 2))
+Double Type: -64.800000
+
+> quit
+
+Process finished with exit code 0
+/home/true/CLionProjects/CI_LISP/cmake-build-debug/cilisp
+
+> (max (print 1 (add 2 3.4) (sub 3 4 5) (div 16 4 2)) 10 2)
+print: Int Type: 1
+print: Double Type: 5.400000
+print: Int Type: -6
+print: Int Type: 2
+WARNING: only the first item in this list is returned.
+Int Type: 10
+
+> (mult (print 1 (add 2 3.4) (sub 3 4 5) (div 16 4 2)) 10 2)
+print: Int Type: 1
+print: Double Type: 5.400000
+print: Int Type: -6
+print: Int Type: 2
+WARNING: only the first item in this list is returned.
+Int Type: 20
+
+> (mult 1 (add 2 3.4) (sub 3 4 5) (div 16 4 2))
+Double Type: -64.800000
+
+> quit
+
+Process finished with exit code 0

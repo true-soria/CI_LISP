@@ -1,0 +1,156 @@
+/home/true/CLionProjects/CI_LISP/cmake-build-debug/cilisp
+
+> (max (print 1 (add 2 3.4) (sub 3 4 5) (div 16 4 2)) 10 2)
+lex: LPAREN
+lex: FUNC sval = max
+lex: LPAREN
+lex: FUNC sval = print
+lex: INT dval = 1.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: LPAREN
+lex: FUNC sval = add
+lex: INT dval = 2.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: DOUBLE dval = 3.400000
+yacc: number ::= DOUBLE
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC expr RPAREN
+lex: LPAREN
+lex: FUNC sval = sub
+lex: INT dval = 3.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: INT dval = 4.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: INT dval = 5.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC expr RPAREN
+lex: LPAREN
+lex: FUNC sval = div
+lex: INT dval = 16.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: INT dval = 4.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: INT dval = 2.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC expr RPAREN
+lex: RPAREN
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC expr RPAREN
+lex: INT dval = 10.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: INT dval = 2.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC expr RPAREN
+lex: EOL
+yacc: program ::= s_expr EOL
+print: Int Type: 1
+print: Double Type: 5.400000
+print: Int Type: -6
+print: Int Type: 2
+WARNING: only the first item in this list is returned.
+Int Type: 10
+
+> 
+ERROR: Too many parameters for the function "max".
+		Extra parameters will be ignored
+
+(mult (print 1 (add 2 3.4) (sub 3 4 5) (div 16 4 2)) 10 2)
+lex: LPAREN
+lex: FUNC sval = mult
+lex: LPAREN
+lex: FUNC sval = print
+lex: INT dval = 1.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: LPAREN
+lex: FUNC sval = add
+lex: INT dval = 2.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: DOUBLE dval = 3.400000
+yacc: number ::= DOUBLE
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC expr RPAREN
+lex: LPAREN
+lex: FUNC sval = sub
+lex: INT dval = 3.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: INT dval = 4.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: INT dval = 5.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+print: Int Type: 1
+print: Double Type: 5.400000
+print: Int Type: -6
+print: Int Type: 2
+WARNING: only the first item in this list is returned.
+Int Type: 20
+
+> yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC expr RPAREN
+lex: LPAREN
+lex: FUNC sval = div
+lex: INT dval = 16.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: INT dval = 4.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: INT dval = 2.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC expr RPAREN
+lex: RPAREN
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC expr RPAREN
+lex: INT dval = 10.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: INT dval = 2.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC expr RPAREN
+lex: EOL
+yacc: program ::= s_expr EOL
+quit
+yacc: s_expr ::= QUIT
+
+Process finished with exit code 0

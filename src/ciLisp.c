@@ -357,86 +357,58 @@ RET_VAL evalFuncNode(FUNC_AST_NODE *funcNode)
 
     // TODO next to fix
 
-    RET_VAL op1;
-
     switch (funcNode->oper)
     {
         case NEG_OPER:
-            op1 = eval(funcNode->opList);
-            result = helperNegOper(&op1);
+            result = helperNegOper(funcNode->opList);
             break;
         case ABS_OPER:
-            op1 = eval(funcNode->opList);
-            result = helperAbsOper(&op1);
+            result = helperAbsOper(funcNode->opList);
             break;
         case EXP_OPER:
-            op1 = eval(funcNode->opList);
-            result = helperExpOper(&op1);
+            result = helperExpOper(funcNode->opList);
             break;
         case SQRT_OPER:
-            op1 = eval(funcNode->opList);
-            result = helperSqrtOper(&op1);
+            result = helperSqrtOper(funcNode->opList);
             break;
         case ADD_OPER:
-            op1 = eval(funcNode->opList);
-            op2 = eval(funcNode->op2);
-            result = helperAddOper(&op1, &op2);
+            result = helperAddOper(funcNode->opList);
             break;
         case SUB_OPER:
-            op1 = eval(funcNode->opList);
-            op2 = eval(funcNode->op2);
-            result = helperSubOper(&op1, &op2);
+            result = helperSubOper(funcNode->opList);
             break;
         case MULT_OPER:
-            op1 = eval(funcNode->opList);
-            op2 = eval(funcNode->op2);
-            result = helperMultOper(&op1, &op2);
+            result = helperMultOper(funcNode->opList);
             break;
         case DIV_OPER:
-            op1 = eval(funcNode->opList);
-            op2 = eval(funcNode->op2);
-            result = helperDivOper(&op1, &op2);
+            result = helperDivOper(funcNode->opList);
             break;
         case REMAINDER_OPER:
-            op1 = eval(funcNode->opList);
-            op2 = eval(funcNode->op2);
-            result = helperRemainderOper(&op1, &op2);
+            result = helperRemainderOper(funcNode->opList);
             break;
         case LOG_OPER:
-            op1 = eval(funcNode->opList);
-            result = helperLogOper(&op1);
+            result = helperLogOper(funcNode->opList);
             break;
         case POW_OPER:
-            op1 = eval(funcNode->opList);
-            op2 = eval(funcNode->op2);
-            result = helperPowOper(&op1, &op2);
+            result = helperPowOper(funcNode->opList);
             break;
         case MAX_OPER:
-            op1 = eval(funcNode->opList);
-            op2 = eval(funcNode->op2);
-            result = helperMaxOper(&op1, &op2);
+            result = helperMaxOper(funcNode->opList);
             break;
         case MIN_OPER:
-            op1 = eval(funcNode->opList);
-            op2 = eval(funcNode->op2);
-            result = helperMinOper(&op1, &op2);
+            result = helperMinOper(funcNode->opList);
             break;
         case EXP2_OPER:
-            op1 = eval(funcNode->opList);
-            result = helperExp2Oper(&op1);
+            result = helperExp2Oper(funcNode->opList);
             break;
         case CBRT_OPER:
-            op1 = eval(funcNode->opList);
-            result = helperCbrtOper(&op1);
+            result = helperCbrtOper(funcNode->opList);
             break;
         case HYPOT_OPER:
-            op1 = eval(funcNode->opList);
-            op2 = eval(funcNode->op2);
-            result = helperHypotOper(&op1, &op2);
+            result = helperHypotOper(funcNode->opList);
             break;
         case PRINT_OPER:
-            op1 = eval(funcNode->opList);
-            result = helperPrintOper(&op1);
+            result = helperPrintOper(funcNode->opList);
             break;
             // how did we get here?
         case READ_OPER:
@@ -547,430 +519,399 @@ void printRetVal(RET_VAL val)
        evalFuncNode Helper methods
      */
 
-RET_VAL helperNegOper(RET_VAL *op1)
+RET_VAL helperNegOper(AST_NODE *op1)
 {
 
     if (!op1)
         return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {DOUBLE_TYPE, NAN};
+    RET_VAL result = eval(op1);
 
-    switch (op1->type)
+
+
+    switch (result.type)
     {
         case INT_TYPE:
-            result.type = INT_TYPE;
-            result.value.ival = -op1->value.ival;
+            result.value.ival = -result.value.ival;
             break;
         case DOUBLE_TYPE:
-            result.value.dval = -op1->value.dval;
+            result.value.dval = -result.value.dval;
             break;
         default:
             yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+    }
+
+    if (op1->next != NULL)
+    {
+        yyerror("Too many parameters for the function \"neg\".\n\t\tExtra parameters will be ignored\n");
     }
 
     return result;
 }
 
 
-RET_VAL helperAbsOper(RET_VAL *op1)
+RET_VAL helperAbsOper(AST_NODE *op1)
 {
 
     if (!op1)
         return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {DOUBLE_TYPE, NAN};
+    RET_VAL result = eval(op1);
 
-    switch (op1->type)
+    switch (result.type)
     {
         case INT_TYPE:
-            result.type = INT_TYPE;
-            result.value.ival = labs(op1->value.ival);
+            result.value.ival = labs(result.value.ival);
             break;
         case DOUBLE_TYPE:
-            result.value.dval = fabs(op1->value.dval);
+            result.value.dval = fabs(result.value.dval);
             break;
         default:
             yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+    }
+
+
+    if (op1->next != NULL)
+    {
+        yyerror("Too many parameters for the function \"abs\".\n\t\tExtra parameters will be ignored\n");
     }
 
     return result;
 }
 
 
-RET_VAL helperExpOper(RET_VAL *op1)
+RET_VAL helperExpOper(AST_NODE *op1)
 {
 
     if (!op1)
         return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {DOUBLE_TYPE, NAN};
+    RET_VAL result = eval(op1);
 
-    switch (op1->type)
+    switch (result.type)
     {
         case INT_TYPE:
-            result.value.dval = exp( (double) op1->value.ival);
+            result.type = DOUBLE_TYPE;
+            result.value.dval = exp( (double) result.value.ival);
             break;
         case DOUBLE_TYPE:
-            result.value.dval = exp(op1->value.dval);
+            result.value.dval = exp(result.value.dval);
             break;
         default:
             yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+    }
+
+    if (op1->next != NULL)
+    {
+        yyerror("Too many parameters for the function \"exp\".\n\t\tExtra parameters will be ignored\n");
     }
 
     return result;
 }
 
 
-RET_VAL helperSqrtOper(RET_VAL *op1)
+RET_VAL helperSqrtOper(AST_NODE *op1)
 {
 
     if (!op1)
         return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {DOUBLE_TYPE, NAN};
+    RET_VAL result = eval(op1);
 
-    switch (op1->type)
+    switch (result.type)
     {
         case INT_TYPE:
-            result.value.dval = sqrt( (double) op1->value.ival);
+            result.type = DOUBLE_TYPE;
+            result.value.dval = sqrt( (double) result.value.ival);
             break;
         case DOUBLE_TYPE:
-            result.value.dval = sqrt(op1->value.dval);
+            result.value.dval = sqrt(result.value.dval);
             break;
         default:
             yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+    }
+
+    if (op1->next != NULL)
+    {
+        yyerror("Too many parameters for the function \"sqrt\".\n\t\tExtra parameters will be ignored\n");
     }
 
     return result;
 }
 
 
-RET_VAL helperAddOper(RET_VAL *op1, RET_VAL *op2)
+RET_VAL helperAddOper(AST_NODE *op1)
 {
 
     if (!op1)
         return (RET_VAL){DOUBLE_TYPE, NAN};
-
-    RET_VAL result = {DOUBLE_TYPE, NAN};
-
-    switch (op1->type)
+    else if (!op1->next)
     {
-        case INT_TYPE:
-            switch (op2->type)
-            {
-                case INT_TYPE:
-                    result.type = INT_TYPE;
-                    result.value.ival = op1->value.ival + op2->value.ival;
-                    break;
-                case DOUBLE_TYPE:
-                    result.value.dval = (double) op1->value.ival + op2->value.dval;
-                    break;
-                default:
-                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-            }
-            break;
-        case DOUBLE_TYPE:
-            switch (op2->type)
-            {
-                case INT_TYPE:
-                    result.value.dval = op1->value.dval + (double) op2->value.ival;
-                    break;
-                case DOUBLE_TYPE:
-                    result.value.dval = op1->value.dval + op2->value.dval;
-                    break;
-                default:
-                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-            }
-            break;
-        default:
-            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+        yyerror("Too few parameters for the function \"add\".\n");
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+    }
+
+    RET_VAL result = eval(op1);
+    AST_NODE *currOp = op1->next;
+    RET_VAL op2; // the follow up Operator value
+
+    while (currOp != NULL)
+    {
+        op2 = eval(currOp);
+
+        switch (result.type) {
+            case INT_TYPE:
+                switch (op2.type) {
+                    case INT_TYPE:
+                        result.value.ival += op2.value.ival;
+                        break;
+                    case DOUBLE_TYPE:
+                        result.type = DOUBLE_TYPE;
+                        result.value.dval = (double)result.value.ival + op2.value.dval;
+                        break;
+                    default:
+                        yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+                }
+                break;
+            case DOUBLE_TYPE:
+                switch (op2.type) {
+                    case INT_TYPE:
+                        result.value.dval += (double) op2.value.ival;
+                        break;
+                    case DOUBLE_TYPE:
+                        result.value.dval += op2.value.dval;
+                        break;
+                    default:
+                        yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+                }
+                break;
+            default:
+                yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+        } // END of switch
+
+        currOp = currOp->next;
+
+    } // END of while
+
+    return result;
+}
+
+
+RET_VAL helperSubOper(AST_NODE *op1)
+{
+
+    if (!op1)
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+    else if (!op1->next)
+    {
+        yyerror("Too few parameters for the function \"sub\".\n");
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+    }
+
+    RET_VAL result = eval(op1);
+    AST_NODE *currOp = op1->next;
+    RET_VAL op2; // the follow up Operator value
+
+    while (currOp != NULL)
+    {
+
+        op2 = eval(currOp);
+
+        switch (result.type) {
+            case INT_TYPE:
+                switch (op2.type) {
+                    case INT_TYPE:
+                        result.value.ival -= op2.value.ival;
+                        break;
+                    case DOUBLE_TYPE:
+                        result.type = DOUBLE_TYPE;
+                        result.value.dval = (double) result.value.ival - op2.value.dval;
+                        break;
+                    default:
+                        yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+                }
+                break;
+            case DOUBLE_TYPE:
+                switch (op2.type) {
+                    case INT_TYPE:
+                        result.value.dval -= (double) op2.value.ival;
+                        break;
+                    case DOUBLE_TYPE:
+                        result.value.dval -= op2.value.dval;
+                        break;
+                    default:
+                        yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+                }
+                break;
+            default:
+                yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+        }
+
+        currOp = currOp->next;
+
     }
 
     return result;
 }
 
 
-RET_VAL helperSubOper(RET_VAL *op1, RET_VAL *op2)
+RET_VAL helperMultOper(AST_NODE *op1)
 {
 
     if (!op1)
         return (RET_VAL){DOUBLE_TYPE, NAN};
-
-    RET_VAL result = {DOUBLE_TYPE, NAN};
-
-    switch (op1->type)
+    else if (!op1->next)
     {
-        case INT_TYPE:
-            switch (op2->type)
-            {
-                case INT_TYPE:
-                    result.type = INT_TYPE;
-                    result.value.ival = op1->value.ival - op2->value.ival;
-                    break;
-                case DOUBLE_TYPE:
-                    result.value.dval = (double) op1->value.ival - op2->value.dval;
-                    break;
-                default:
-                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-            }
-            break;
-        case DOUBLE_TYPE:
-            switch (op2->type)
-            {
-                case INT_TYPE:
-                    result.value.dval = op1->value.dval - (double) op2->value.ival;
-                    break;
-                case DOUBLE_TYPE:
-                    result.value.dval = op1->value.dval - op2->value.dval;
-                    break;
-                default:
-                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-            }
-            break;
-        default:
-            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+        yyerror("Too few parameters for the function \"mult\".\n");
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+    }
+
+    RET_VAL result = eval(op1);
+    AST_NODE *currOp = op1->next;
+    RET_VAL op2; // the follow up Operator value
+
+
+    while (currOp != NULL)
+    {
+
+        op2 = eval(currOp);
+
+        switch (result.type) {
+            case INT_TYPE:
+                switch (op2.type) {
+                    case INT_TYPE:
+                        result.value.ival *= op2.value.ival;
+                        break;
+                    case DOUBLE_TYPE:
+                        result.type = DOUBLE_TYPE;
+                        result.value.dval = (double) result.value.ival * op2.value.dval;
+                        break;
+                    default:
+                        yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+                }
+                break;
+            case DOUBLE_TYPE:
+                switch (op2.type) {
+                    case INT_TYPE:
+                        result.value.dval *= (double) op2.value.ival;
+                        break;
+                    case DOUBLE_TYPE:
+                        result.value.dval *= op2.value.dval;
+                        break;
+                    default:
+                        yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+                }
+                break;
+            default:
+                yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+        }
+
+        currOp = currOp->next;
+
     }
 
     return result;
 }
 
 
-RET_VAL helperMultOper(RET_VAL *op1, RET_VAL *op2)
+RET_VAL helperDivOper(AST_NODE *op1)
 {
 
     if (!op1)
         return (RET_VAL){DOUBLE_TYPE, NAN};
-
-    RET_VAL result = {DOUBLE_TYPE, NAN};
-
-    switch (op1->type)
+    else if (!op1->next)
     {
-        case INT_TYPE:
-            switch (op2->type)
-            {
-                case INT_TYPE:
-                    result.type = INT_TYPE;
-                    result.value.ival = op1->value.ival * op2->value.ival;
-                    break;
-                case DOUBLE_TYPE:
-                    result.value.dval = (double) op1->value.ival * op2->value.dval;
-                    break;
-                default:
-                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-            }
-            break;
-        case DOUBLE_TYPE:
-            switch (op2->type)
-            {
-                case INT_TYPE:
-                    result.value.dval = op1->value.dval * (double) op2->value.ival;
-                    break;
-                case DOUBLE_TYPE:
-                    result.value.dval = op1->value.dval * op2->value.dval;
-                    break;
-                default:
-                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-            }
-            break;
-        default:
-            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+        yyerror("Too few parameters for the function \"div\".\n");
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+    }
+
+    RET_VAL result = eval(op1);
+    AST_NODE *currOp = op1->next;
+    RET_VAL op2; // the follow up Operator value
+
+
+    while (currOp != NULL)
+    {
+
+        op2 = eval(currOp);
+
+        switch (result.type) {
+            case INT_TYPE:
+                switch (op2.type) {
+                    case INT_TYPE:
+                        result.value.ival /= op2.value.ival;
+                        break;
+                    case DOUBLE_TYPE:
+                        result.type = DOUBLE_TYPE;
+                        result.value.dval = (double) result.value.ival / op2.value.dval;
+                        break;
+                    default:
+                        yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+                }
+                break;
+            case DOUBLE_TYPE:
+                switch (op2.type) {
+                    case INT_TYPE:
+                        result.value.dval /= (double) op2.value.ival;
+                        break;
+                    case DOUBLE_TYPE:
+                        result.value.dval /= op2.value.dval;
+                        break;
+                    default:
+                        yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+                }
+                break;
+            default:
+                yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+        }
+
+        currOp = currOp->next;
+
     }
 
     return result;
 }
 
 
-RET_VAL helperDivOper(RET_VAL *op1, RET_VAL *op2)
+RET_VAL helperRemainderOper(AST_NODE *op1)
 {
 
     if (!op1)
         return (RET_VAL){DOUBLE_TYPE, NAN};
-
-    RET_VAL result = {DOUBLE_TYPE, NAN};
-
-    switch (op1->type)
+    else if (!op1->next)
     {
-        case INT_TYPE:
-            switch (op2->type)
-            {
-                case INT_TYPE:
-                    result.type = INT_TYPE;
-                    result.value.ival = op1->value.ival / op2->value.ival;
-                    break;
-                case DOUBLE_TYPE:
-                    result.value.dval = (double) op1->value.ival / op2->value.dval;
-                    break;
-                default:
-                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-            }
-            break;
-        case DOUBLE_TYPE:
-            switch (op2->type)
-            {
-                case INT_TYPE:
-                    result.value.dval = op1->value.dval / (double) op2->value.ival;
-                    break;
-                case DOUBLE_TYPE:
-                    result.value.dval = op1->value.dval / op2->value.dval;
-                    break;
-                default:
-                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-            }
-            break;
-        default:
-            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+        yyerror("Too few parameters for the function \"remainder\".\n");
+        return (RET_VAL){DOUBLE_TYPE, NAN};
     }
 
-    return result;
-}
 
+    RET_VAL result = eval(op1);
+    RET_VAL op2 = eval(op1->next);
 
-RET_VAL helperRemainderOper(RET_VAL *op1, RET_VAL *op2)
-{
-
-    if (!op1)
-        return (RET_VAL){DOUBLE_TYPE, NAN};
-
-    RET_VAL result = {DOUBLE_TYPE, NAN};
-
-    switch (op1->type)
+    switch (result.type)
     {
         case INT_TYPE:
-            switch (op2->type)
+            switch (op2.type)
             {
                 case INT_TYPE:
-                    result.type = INT_TYPE;
-                    result.value.ival = op1->value.ival % op2->value.ival;
+                    result.value.ival = result.value.ival % op2.value.ival;
                     break;
                 case DOUBLE_TYPE:
-                    result.value.dval = fmod((double) op1->value.ival, op2->value.dval);
+                    result.type = DOUBLE_TYPE;
+                    result.value.dval = fmod((double) result.value.ival, op2.value.dval);
                     break;
                 default:
                     yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
             }
             break;
         case DOUBLE_TYPE:
-            switch (op2->type)
+            switch (op2.type)
             {
                 case INT_TYPE:
-                    result.value.dval = fmod(op1->value.dval, (double) op2->value.ival);
+                    result.value.dval = fmod(result.value.dval, (double) op2.value.ival);
                     break;
                 case DOUBLE_TYPE:
-                    result.value.dval = fmod(op1->value.dval, op2->value.dval);
-                    break;
-                default:
-                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-            }
-            break;
-        default:
-            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-    }
-
-    return result;
-}
-
-
-RET_VAL helperLogOper(RET_VAL *op1)
-{
-
-    if (!op1)
-        return (RET_VAL){DOUBLE_TYPE, NAN};
-
-    RET_VAL result = {DOUBLE_TYPE, NAN};
-
-    switch (op1->type)
-    {
-        case INT_TYPE:
-            result.value.dval = log( (double) op1->value.ival);
-            break;
-        case DOUBLE_TYPE:
-            result.value.dval = log(op1->value.dval);
-            break;
-        default:
-            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-    }
-
-    return result;
-}
-
-
-RET_VAL helperPowOper(RET_VAL *op1, RET_VAL *op2)
-{
-
-    if (!op1)
-        return (RET_VAL){DOUBLE_TYPE, NAN};
-
-    RET_VAL result = {DOUBLE_TYPE, NAN};
-
-    switch (op1->type)
-    {
-        case INT_TYPE:
-            switch (op2->type)
-            {
-                case INT_TYPE:
-                    result.type = INT_TYPE;
-                    result.value.ival = lround(pow( (double) op1->value.ival, (double) op2->value.ival));
-                    break;
-                case DOUBLE_TYPE:
-                    result.value.dval = pow((double) op1->value.ival, op2->value.dval);
-                    break;
-                default:
-                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-            }
-            break;
-        case DOUBLE_TYPE:
-            switch (op2->type)
-            {
-                case INT_TYPE:
-                    result.value.dval = pow(op1->value.dval, (double) op2->value.ival);
-                    break;
-                case DOUBLE_TYPE:
-                    result.value.dval = pow( op1->value.dval, op2->value.dval );
-                    break;
-                default:
-                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-            }
-            break;
-        default:
-            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-    }
-
-    return result;
-}
-
-
-RET_VAL helperMaxOper(RET_VAL *op1, RET_VAL *op2)
-{
-
-    if (!op1)
-        return (RET_VAL){DOUBLE_TYPE, NAN};
-
-    RET_VAL result = {DOUBLE_TYPE, NAN};
-
-    switch (op1->type)
-    {
-        case INT_TYPE:
-            switch (op2->type)
-            {
-                case INT_TYPE:
-                    result.type = INT_TYPE;
-                    result.value.ival = lround( fmax( (double) op1->value.ival, (double) op2->value.ival));
-                    break;
-                case DOUBLE_TYPE:
-                    result.value.dval = fmax((double) op1->value.ival, op2->value.dval);
-                    break;
-                default:
-                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-            }
-            break;
-        case DOUBLE_TYPE:
-            switch (op2->type)
-            {
-                case INT_TYPE:
-                    result.value.dval = fmax(op1->value.dval, (double) op2->value.ival);
-                    break;
-                case DOUBLE_TYPE:
-                    result.value.dval = fmax( op1->value.dval, op2->value.dval );
+                    result.value.dval = fmod(result.value.dval, op2.value.dval);
                     break;
                 default:
                     yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
@@ -980,134 +921,84 @@ RET_VAL helperMaxOper(RET_VAL *op1, RET_VAL *op2)
             yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
     }
 
-    return result;
-}
-
-
-RET_VAL helperMinOper(RET_VAL *op1, RET_VAL *op2)
-{
-
-    if (!op1)
-        return (RET_VAL){DOUBLE_TYPE, NAN};
-
-    RET_VAL result = {DOUBLE_TYPE, NAN};
-
-    switch (op1->type)
+    if (op1->next->next != NULL)
     {
-        case INT_TYPE:
-            switch (op2->type)
-            {
-                case INT_TYPE:
-                    result.type = INT_TYPE;
-                    result.value.ival = lround( fmin( (double) op1->value.ival, (double) op2->value.ival));
-                    break;
-                case DOUBLE_TYPE:
-                    result.value.dval = fmin((double) op1->value.ival, op2->value.dval);
-                    break;
-                default:
-                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-            }
-            break;
-        case DOUBLE_TYPE:
-            switch (op2->type)
-            {
-                case INT_TYPE:
-                    result.value.dval = fmin(op1->value.dval, (double) op2->value.ival);
-                    break;
-                case DOUBLE_TYPE:
-                    result.value.dval = fmin( op1->value.dval, op2->value.dval );
-                    break;
-                default:
-                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-            }
-            break;
-        default:
-            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+        yyerror("Too many parameters for the function \"remainder\".\n\t\tExtra parameters will be ignored\n");
     }
 
     return result;
 }
 
 
-RET_VAL helperExp2Oper(RET_VAL *op1)
+RET_VAL helperLogOper(AST_NODE *op1)
 {
 
     if (!op1)
         return (RET_VAL){DOUBLE_TYPE, NAN};
 
-    RET_VAL result = {DOUBLE_TYPE, NAN};
 
-    switch (op1->type)
+    RET_VAL result = eval(op1);
+
+    switch (result.type)
     {
         case INT_TYPE:
-            result.value.dval = exp2( (double) op1->value.ival);
+            result.type = DOUBLE_TYPE;
+            result.value.dval = log( (double) result.value.ival);
             break;
         case DOUBLE_TYPE:
-            result.value.dval = exp2(op1->value.dval);
+            result.value.dval = log(result.value.dval);
             break;
         default:
             yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+    }
+
+    if (op1->next != NULL)
+    {
+        yyerror("Too many parameters for the function \"log\".\n\t\tExtra parameters will be ignored\n");
     }
 
     return result;
 }
 
 
-RET_VAL helperCbrtOper(RET_VAL *op1)
+RET_VAL helperPowOper(AST_NODE *op1)
 {
 
     if (!op1)
         return (RET_VAL){DOUBLE_TYPE, NAN};
-
-    RET_VAL result = {DOUBLE_TYPE, NAN};
-
-    switch (op1->type)
+    else if (!op1->next)
     {
-        case INT_TYPE:
-            result.value.dval = cbrt( (double) op1->value.ival);
-            break;
-        case DOUBLE_TYPE:
-            result.value.dval = cbrt(op1->value.dval);
-            break;
-        default:
-            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+        yyerror("Too few parameters for the function \"pow\".\n");
+        return (RET_VAL){DOUBLE_TYPE, NAN};
     }
 
-    return result;
-}
+    RET_VAL result = eval(op1);
+    RET_VAL op2 = eval(op1->next);
 
-
-RET_VAL helperHypotOper(RET_VAL *op1, RET_VAL *op2)
-{
-
-    if (!op1)
-        return (RET_VAL){DOUBLE_TYPE, NAN};
-
-    RET_VAL result = {DOUBLE_TYPE, NAN};
-
-    switch (op1->type)
+    switch (result.type)
     {
         case INT_TYPE:
-            switch (op2->type)
+            switch (op2.type)
             {
                 case INT_TYPE:
-                    result.value.dval = hypot( (double) op1->value.ival, (double) op2->value.ival);
+                    result.value.ival = lround(pow( (double) result.value.ival, (double) op2.value.ival));
                     break;
                 case DOUBLE_TYPE:
-                    result.value.dval = hypot( (double) op1->value.ival, op2->value.dval);
+                    result.type = DOUBLE_TYPE;
+                    result.value.dval = pow((double) result.value.ival, op2.value.dval);
                     break;
                 default:
                     yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
             }
             break;
         case DOUBLE_TYPE:
-            switch (op2->type)
+            switch (op2.type)
             {
                 case INT_TYPE:
-                    result.value.dval = hypot( op1->value.dval, (double) op2->value.ival);
+                    result.value.dval = pow(result.value.dval, (double) op2.value.ival);
                     break;
                 case DOUBLE_TYPE:
-                    result.value.dval = hypot( op1->value.dval, op2->value.dval );
+                    result.value.dval = pow( result.value.dval, op2.value.dval );
                     break;
                 default:
                     yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
@@ -1117,31 +1008,281 @@ RET_VAL helperHypotOper(RET_VAL *op1, RET_VAL *op2)
             yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
     }
 
+    if (op1->next->next != NULL)
+    {
+        yyerror("Too many parameters for the function \"pow\".\n\t\tExtra parameters will be ignored\n");
+    }
+
     return result;
 }
 
-RET_VAL helperPrintOper(RET_VAL *op1)
+
+RET_VAL helperMaxOper(AST_NODE *op1)
+{
+
+    if (!op1)
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+    else if (!op1->next)
+    {
+        yyerror("Too few parameters for the function \"max\".\n");
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+    }
+
+    RET_VAL result = eval(op1);
+    RET_VAL op2 = eval(op1->next);
+
+    switch (result.type)
+    {
+        case INT_TYPE:
+            switch (op2.type)
+            {
+                case INT_TYPE:
+                    result.value.ival = lround( fmax( (double) result.value.ival, (double) op2.value.ival));
+                    break;
+                case DOUBLE_TYPE:
+                    result.type = DOUBLE_TYPE;
+                    result.value.dval = fmax((double) result.value.ival, op2.value.dval);
+                    break;
+                default:
+                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+            }
+            break;
+        case DOUBLE_TYPE:
+            switch (op2.type)
+            {
+                case INT_TYPE:
+                    result.value.dval = fmax(result.value.dval, (double) op2.value.ival);
+                    break;
+                case DOUBLE_TYPE:
+                    result.value.dval = fmax( result.value.dval, op2.value.dval );
+                    break;
+                default:
+                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+            }
+            break;
+        default:
+            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+    }
+
+    if (op1->next->next != NULL)
+    {
+        yyerror("Too many parameters for the function \"max\".\n\t\tExtra parameters will be ignored\n");
+    }
+
+    return result;
+}
+
+
+RET_VAL helperMinOper(AST_NODE *op1)
+{
+
+    if (!op1)
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+    else if (!op1->next)
+    {
+        yyerror("Too few parameters for the function \"min\".\n");
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+    }
+
+    RET_VAL result = eval(op1);
+    RET_VAL op2 = eval(op1->next);
+
+    switch (op1->type)
+    {
+        case INT_TYPE:
+            switch (op2.type)
+            {
+                case INT_TYPE:
+                    result.value.ival = lround( fmin( (double) result.value.ival, (double) op2.value.ival));
+                    break;
+                case DOUBLE_TYPE:
+                    result.type = DOUBLE_TYPE;
+                    result.value.dval = fmin((double) result.value.ival, op2.value.dval);
+                    break;
+                default:
+                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+            }
+            break;
+        case DOUBLE_TYPE:
+            switch (op2.type)
+            {
+                case INT_TYPE:
+                    result.value.dval = fmin(result.value.dval, (double) op2.value.ival);
+                    break;
+                case DOUBLE_TYPE:
+                    result.value.dval = fmin( result.value.dval, op2.value.dval );
+                    break;
+                default:
+                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+            }
+            break;
+        default:
+            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+    }
+
+    if (op1->next->next != NULL)
+    {
+        yyerror("Too many parameters for the function \"min\".\n\t\tExtra parameters will be ignored\n");
+    }
+
+    return result;
+}
+
+
+RET_VAL helperExp2Oper(AST_NODE *op1)
+{
+
+    if (!op1)
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+
+    RET_VAL result = eval(op1);
+
+    switch (result.type)
+    {
+        case INT_TYPE:
+            result.type = DOUBLE_TYPE;
+            result.value.dval = exp2( (double) result.value.ival);
+            break;
+        case DOUBLE_TYPE:
+            result.value.dval = exp2(result.value.dval);
+            break;
+        default:
+            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+    }
+
+    if (op1->next != NULL)
+    {
+        yyerror("Too many parameters for the function \"exp2\".\n\t\tExtra parameters will be ignored\n");
+    }
+
+    return result;
+}
+
+
+RET_VAL helperCbrtOper(AST_NODE *op1)
+{
+
+    if (!op1)
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+
+    RET_VAL result = eval(op1);
+
+    switch (op1->type)
+    {
+        case INT_TYPE:
+            result.type = DOUBLE_TYPE;
+            result.value.dval = cbrt( (double) result.value.ival);
+            break;
+        case DOUBLE_TYPE:
+            result.value.dval = cbrt(result.value.dval);
+            break;
+        default:
+            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+    }
+
+    if (op1->next != NULL)
+    {
+        yyerror("Too many parameters for the function \"cbrt\".\n\t\tExtra parameters will be ignored\n");
+    }
+
+    return result;
+}
+
+
+RET_VAL helperHypotOper(AST_NODE *op1)
+{
+
+    if (!op1)
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+    else if (!op1->next)
+    {
+        yyerror("Too few parameters for the function \"hypot\".\n");
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+    }
+
+    RET_VAL result = eval(op1);
+    RET_VAL op2 = eval(op1->next);
+
+    switch (result.type)
+    {
+        case INT_TYPE:
+            switch (op2.type)
+            {
+                case INT_TYPE:
+                    result.type = DOUBLE_TYPE;
+                    result.value.dval = hypot( (double) result.value.ival, (double) op2.value.ival);
+                    break;
+                case DOUBLE_TYPE:
+                    result.type = DOUBLE_TYPE;
+                    result.value.dval = hypot( (double) result.value.ival, op2.value.dval);
+                    break;
+                default:
+                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+            }
+            break;
+        case DOUBLE_TYPE:
+            switch (op2.type)
+            {
+                case INT_TYPE:
+                    result.value.dval = hypot( result.value.dval, (double) op2.value.ival);
+                    break;
+                case DOUBLE_TYPE:
+                    result.value.dval = hypot( result.value.dval, op2.value.dval );
+                    break;
+                default:
+                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+            }
+            break;
+        default:
+            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+    }
+
+    if (op1->next->next != NULL)
+    {
+        yyerror("Too many parameters for the function \"hypot\".\n\t\tExtra parameters will be ignored\n");
+    }
+
+    return result;
+}
+
+RET_VAL helperPrintOper(AST_NODE *op1)
 {
     // Most recent helper function yes I put it at the bottom.
 
     if (!op1)
     {
-        printf("Warning: This operation did not retrieve a number");
+        printf("Warning: This operation did not retrieve a number\n");
         return (RET_VAL) {DOUBLE_TYPE, NAN};
     }
 
-    printf("print: ");
-    switch (op1->type)
+    RET_VAL result = eval(op1);
+
+    AST_NODE *currOp = op1;
+    RET_VAL opResult;
+
+    while (currOp != NULL)
     {
-        case INT_TYPE:
-            printf("Int Type: %ld\n", op1->value.ival);
-            break;
-        case DOUBLE_TYPE:
-            printf("Double Type: %lf\n", op1->value.dval);
-            break;
-        default:
-            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+        opResult = eval(currOp);
+
+        printf("print: ");
+        switch (opResult.type) {
+            case INT_TYPE:
+                printf("Int Type: %ld\n", opResult.value.ival);
+                break;
+            case DOUBLE_TYPE:
+                printf("Double Type: %lf\n", opResult.value.dval);
+                break;
+            default:
+                yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!\n");
+        }
+
+        currOp = currOp->next;
+
     }
 
-    return *op1;
+    if (op1->next != NULL) {
+        printf("WARNING: only the first item in this list is returned.\n");
+    }
+
+    return result;
 }

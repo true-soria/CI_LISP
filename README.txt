@@ -21,3 +21,11 @@ Task 4 Complete
  - Tested a couple times with and without debugging statements
  - introduced another helper method for it. It's at the bottom. (with a TODO)
  - sample runs included
+
+ 11/27/19
+ Task 5 Complete
+ - Tested with and without debugging
+ - Throwing away extra s-expressions is referenced only when debug statements are on
+ - warnings from print function are printed regardless
+ - Uncertain how effective the freeNode function is.
+ 
