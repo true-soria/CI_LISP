@@ -1,0 +1,362 @@
+/home/true/CLionProjects/CI_LISP/cmake-build-debug/cilisp
+
+> ((let (int a (read)) (double b (read)) (c (read)) (d (read))) (print a b c d))
+lex: LPAREN
+lex: LPAREN
+lex: LET
+lex: LPAREN
+lex: TYPE sval = int
+lex: SYMBOL sval = a
+lex: LPAREN
+lex: FUNC sval = read
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC RPAREN
+lex: RPAREN
+yacc: let_elem ::= LPAREN TYPE SYMBOL s_expr RPAREN
+yacc: let_list ::= LET let_elem
+lex: LPAREN
+lex: TYPE sval = double
+lex: SYMBOL sval = b
+lex: LPAREN
+lex: FUNC sval = read
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC RPAREN
+lex: RPAREN
+yacc: let_elem ::= LPAREN TYPE SYMBOL s_expr RPAREN
+yacc: let_list ::= let_list let_elem
+read := lex: LPAREN
+lex: SYMBOL sval = c
+lex: LPAREN
+lex: FUNC sval = read
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC RPAREN
+lex: RPAREN
+yacc: let_elem ::= LPAREN SYMBOL s_expr RPAREN
+yacc: let_list ::= let_list let_elem
+lex: LPAREN
+lex: SYMBOL sval = d
+lex: LPAREN
+lex: FUNC sval = read
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC RPAREN
+lex: RPAREN
+yacc: let_elem ::= LPAREN SYMBOL s_expr RPAREN
+yacc: let_list ::= let_list let_elem
+lex: RPAREN
+yacc: let_section ::= LPAREN let_list RPAREN
+lex: LPAREN
+lex: FUNC sval = print
+lex: SYMBOL sval = a
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: SYMBOL sval = b
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: SYMBOL sval = c
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: SYMBOL sval = d
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: RPAREN
+yacc: s_expr_list ::= s_expr
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC s_expr RPAREN
+lex: RPAREN
+yacc: s_expr ::= LPAREN let_section s_expr RPAREN
+lex: EOL
+yacc: program ::= s_expr EOL
+1
+read := 2.00
+read := 333
+read := 4.321
+print: 1, 2.00, 333, 4.32,
+WARNING: only the last item in this list is returned.
+Double Type: 4.321000
+
+> ((let (int a (read)) (double b (read)) (c (read)) (d (read))) (print a b c d))
+lex: LPAREN
+lex: LPAREN
+lex: LET
+lex: LPAREN
+lex: TYPE sval = int
+lex: SYMBOL sval = a
+lex: LPAREN
+lex: FUNC sval = read
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC RPAREN
+lex: RPAREN
+yacc: let_elem ::= LPAREN TYPE SYMBOL s_expr RPAREN
+yacc: let_list ::= LET let_elem
+lex: LPAREN
+lex: TYPE sval = double
+lex: SYMBOL sval = b
+lex: LPAREN
+lex: FUNC sval = read
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC RPAREN
+lex: RPAREN
+yacc: let_elem ::= LPAREN TYPE SYMBOL s_expr RPAREN
+yacc: let_list ::= let_list let_elem
+lex: LPAREN
+lex: SYMBOL sval = c
+lex: LPAREN
+lex: FUNC sval = read
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC RPAREN
+lex: RPAREN
+yacc: let_elem ::= LPAREN SYMBOL s_expr RPAREN
+yacc: let_list ::= let_list let_elem
+lex: LPAREN
+lex: SYMBOL sval = d
+lex: LPAREN
+lex: FUNC sval = read
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC RPAREN
+lex: RPAREN
+yacc: let_elem ::= LPAREN SYMBOL s_expr RPAREN
+yacc: let_list ::= let_list let_elem
+lex: RPAREN
+yacc: let_section ::= LPAREN let_list RPAREN
+lex: LPAREN
+lex: FUNC sval = print
+lex: SYMBOL sval = a
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: SYMBOL sval = b
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: SYMBOL sval = c
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: SYMBOL sval = d
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: RPAREN
+yacc: s_expr_list ::= s_expr
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC s_expr RPAREN
+read := lex: RPAREN
+yacc: s_expr ::= LPAREN let_section s_expr RPAREN
+lex: EOL
+yacc: program ::= s_expr EOL
+1
+read := 2what
+
+read := ERROR: Invalid input for a number entered
+
+3..3
+
+read := ERROR: Extra decimal was entered.
+
+
+ERROR: Invalid input for a number entered
+
+four
+print: 1, nan, nan, nan,
+
+WARNING: only the last item in this list is returned.
+Double Type: nan
+ERROR: Invalid input for a number entered
+
+
+> ((let (a 0)) (cond (less (rand) 0.5) (add a 1) (sub a 1)))
+lex: LPAREN
+lex: LPAREN
+lex: LET
+lex: LPAREN
+lex: SYMBOL sval = a
+lex: INT dval = 0.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: let_elem ::= LPAREN SYMBOL s_expr RPAREN
+yacc: let_list ::= LET let_elem
+lex: RPAREN
+yacc: let_section ::= LPAREN let_list RPAREN
+lex: LPAREN
+lex: COND
+lex: LPAREN
+lex: FUNC sval = less
+lex: LPAREN
+lex: FUNC sval = rand
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC RPAREN
+lex: DOUBLE dval = 0.500000
+yacc: number ::= DOUBLE
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr_list ::= s_expr
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC s_expr RPAREN
+lex: LPAREN
+lex: FUNC sval = add
+lex: SYMBOL sval = a
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: INT dval = 1.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr_list ::= s_expr
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC s_expr RPAREN
+lex: LPAREN
+lex: FUNC sval = sub
+lex: SYMBOL sval = a
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: INT dval = 1.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr_list ::= s_expr
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC s_expr RPAREN
+lex: RPAREN
+yacc: s_expr ::= LPAREN COND s_expr s_expr s_expr RPAREN
+lex: RPAREN
+yacc: s_expr ::= LPAREN let_section s_expr RPAREN
+lex: EOL
+yacc: program ::= s_expr EOL
+
+ERROR: Invalid AST_NODE_TYPE, probably invalid writes somewhere!
+Int Type: -1
+
+> ((let (a 0)) (cond (less (rand) 0.5) (add a 1) (sub a 1)))
+lex: LPAREN
+lex: LPAREN
+lex: LET
+lex: LPAREN
+lex: SYMBOL sval = a
+lex: INT dval = 0.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: let_elem ::= LPAREN SYMBOL s_expr RPAREN
+yacc: let_list ::= LET let_elem
+lex: RPAREN
+yacc: let_section ::= LPAREN let_list RPAREN
+lex: LPAREN
+lex: COND
+lex: LPAREN
+lex: FUNC sval = less
+lex: LPAREN
+lex: FUNC sval = rand
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC RPAREN
+lex: DOUBLE dval = 0.500000
+yacc: number ::= DOUBLE
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr_list ::= s_expr
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC s_expr RPAREN
+lex: LPAREN
+lex: FUNC sval = add
+lex: SYMBOL sval = a
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: INT dval = 1.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr_list ::= s_expr
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC s_expr RPAREN
+lex: LPAREN
+lex: FUNC sval = sub
+lex: SYMBOL sval = a
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: INT dval = 1.000000
+yacc: number ::= INT
+yacc: s_expr ::= number
+lex: RPAREN
+yacc: s_expr_list ::= s_expr
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC s_expr RPAREN
+lex: RPAREN
+yacc: s_expr ::= LPAREN COND s_expr s_expr s_expr RPAREN
+lex: RPAREN
+yacc: s_expr ::= LPAREN let_section s_expr RPAREN
+lex: EOL
+yacc: program ::= s_expr EOL
+
+Int Type: 1
+ERROR: Invalid AST_NODE_TYPE, probably invalid writes somewhere!
+
+> ((let (myA (read))(myB (rand)))(cond (less myA myB) (print myA) (print myB)))
+lex: LPAREN
+lex: LPAREN
+lex: LET
+lex: LPAREN
+lex: SYMBOL sval = myA
+lex: LPAREN
+lex: FUNC sval = read
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC RPAREN
+lex: RPAREN
+yacc: let_elem ::= LPAREN SYMBOL s_expr RPAREN
+yacc: let_list ::= LET let_elem
+lex: LPAREN
+lex: SYMBOL sval = myB
+lex: LPAREN
+lex: FUNC sval = rand
+lex: RPAREN
+yacc: s_expr ::= LPAREN FUNC RPAREN
+lex: RPAREN
+yacc: let_elem ::= LPAREN SYMBOL s_expr RPAREN
+yacc: let_list ::= let_list let_elem
+lex: RPAREN
+yacc: let_section ::= LPAREN let_list RPAREN
+lex: LPAREN
+lex: COND
+lex: LPAREN
+lex: FUNC sval = less
+lex: SYMBOL sval = myA
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: SYMBOL sval = myB
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: RPAREN
+yacc: s_expr_list ::= s_expr
+yacc: s_expr_list ::= s_expr s_expr_list
+yacc: s_expr ::= LPAREN FUNC s_expr RPAREN
+lex: LPAREN
+lex: FUNC sval = print
+lex: SYMBOL sval = myA
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: RPAREN
+yacc: s_expr_list ::= s_expr
+yacc: s_expr ::= LPAREN FUNC s_expr RPAREN
+lex: LPAREN
+lex: FUNC sval = print
+lex: SYMBOL sval = myB
+yacc: symbol ::= SYMBOL
+yacc: s_expr ::= symbol
+lex: RPAREN
+yacc: s_expr_list ::= s_expr
+yacc: s_expr ::= LPAREN FUNC s_expr RPAREN
+lex: RPAREN
+read := yacc: s_expr ::= LPAREN COND s_expr s_expr s_expr RPAREN
+lex: RPAREN
+yacc: s_expr ::= LPAREN let_section s_expr RPAREN
+lex: EOL
+yacc: program ::= s_expr EOL
+2
+
+print: 0.78,
+ERROR: Invalid AST_NODE_TYPE, probably invalid writes somewhere!
+Double Type: 0.783099
+
+> quit
+yacc: s_expr ::= QUIT
+
+Process finished with exit code 0

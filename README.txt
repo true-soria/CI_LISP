@@ -29,3 +29,8 @@ Task 4 Complete
  - warnings from print function are printed regardless
  - Uncertain how effective the freeNode function is.
  
+ 12/2/19
+ Task 6 Complete
+ - Improved print function's formatting. It now prints after the evaluation of the whole statement
+ - Tested with and without debugging
+ - works fine

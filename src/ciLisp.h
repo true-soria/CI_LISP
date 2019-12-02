@@ -1,5 +1,7 @@
 #ifndef __cilisp_h_
 #define __cilisp_h_
+#define BUFFER_DOUBLE 0.000001
+#define CHAR_BUFFER 128
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,7 +54,8 @@ OPER_TYPE resolveFunc(char *);
 typedef enum {
     NUM_NODE_TYPE,
     FUNC_NODE_TYPE,
-    SYMBOL_NODE_TYPE
+    SYMBOL_NODE_TYPE,
+    COND_NODE_TYPE
 } AST_NODE_TYPE;
 
 // Types of numeric values
@@ -102,6 +105,15 @@ typedef struct symbol_ast_node {
     char *ident;
 } SYMBOL_AST_NODE;
 
+// Condition Abstract Syntax Tree Node. This node works like an if/else statement
+// if the evaluation of condNode leads to 0, the falseNode is evaluated and returned
+// if the evaluation leads to any non-0 value, the trueNode is evaluated and returned
+
+typedef struct {
+    struct ast_node *condNode;
+    struct ast_node *trueNode; // to eval if cond is nonzero
+    struct ast_node *falseNode; // to eval if cond is zero
+} COND_AST_NODE;
 
 
 // Generic Abstract Syntax Tree node. Stores the type of node,
@@ -113,6 +125,7 @@ typedef struct ast_node {
     union {
         NUM_AST_NODE number;
         FUNC_AST_NODE function;
+        COND_AST_NODE condition;
         SYMBOL_AST_NODE symbol;
     } data;
     struct ast_node *next;
@@ -136,20 +149,25 @@ SYMBOL_TABLE_NODE *createSymbolTableNode(char *type, char *ident, AST_NODE *val)
 // links Symbol Table Node Chain
 SYMBOL_TABLE_NODE *linkLetSection(SYMBOL_TABLE_NODE *head, SYMBOL_TABLE_NODE * newVal);
 
+// TODO a create-a-Condition-Node function - done
+AST_NODE *createCondNode(AST_NODE *conditionsExpr, AST_NODE *truthExpr, AST_NODE *falseExpr);
+
 
 
 void freeNode(AST_NODE *node);
 
 RET_VAL eval(AST_NODE *node);
 RET_VAL evalNumNode(NUM_AST_NODE *numNode);
-RET_VAL evalFuncNode(FUNC_AST_NODE *funcNode);
+RET_VAL evalFuncNode(AST_NODE *node);
 
 RET_VAL evalSymbolNode(AST_NODE *symbolNode);
+
+// TODO a evaluate-Condition-Node function - done
+RET_VAL evalCondNode(COND_AST_NODE *condAstNode);
 
 void printRetVal(RET_VAL val);
 
 // evalFuncNode helper methods
-// TODO ALL of these need to be redone
 
 RET_VAL helperNegOper(AST_NODE *op1);
 RET_VAL helperAbsOper(AST_NODE *op1);
@@ -172,12 +190,13 @@ RET_VAL helperHypotOper(AST_NODE *op1);
 RET_VAL helperPrintOper(AST_NODE *op1);
 
 
-// functions of some later part
+// functions of part 6
 
-/*RET_VAL helperReadOper(RET_VAL *op1, RET_VAL *op2);
-RET_VAL helperRandOper(RET_VAL *op1, RET_VAL *op2);
-RET_VAL helperEqualOper(RET_VAL *op1, RET_VAL *op2);
-RET_VAL helperLessOper(RET_VAL *op1, RET_VAL *op2);
-RET_VAL helperGreaterOper(RET_VAL *op1, RET_VAL *op2);*/
+// TODO these functions - done
+RET_VAL helperReadOper(AST_NODE *root);
+RET_VAL helperRandOper(AST_NODE *root);
+RET_VAL helperEqualOper(AST_NODE *op1);
+RET_VAL helperLessOper(AST_NODE *op1);
+RET_VAL helperGreaterOper(AST_NODE *op1);
 
 #endif
