@@ -57,10 +57,13 @@ OPER_TYPE resolveFunc(char *funcName)
 NUM_TYPE resolveNum(char *numName)
 {
     int i = 0;
-    while (funcNames[i][0] != '\0')
+    while (numTypeNames[i][0] != '\0')
     {
         if (strcmp(numTypeNames[i], numName) == 0)
+        {
+            free(numName);
             return i;
+        }
         i++;
     }
     return NO_TYPE;
@@ -73,21 +76,7 @@ NUM_TYPE resolveNum(char *numName)
 // SEE: AST_NODE, NUM_AST_NODE, AST_NODE_TYPE.
 AST_NODE *createNumberNode(double value, NUM_TYPE type)
 {
-    AST_NODE *node;
-    size_t nodeSize;
-
-    // allocate space for the fixed sie and the variable part (union)
-    nodeSize = sizeof(AST_NODE);
-    if ((node = calloc(nodeSize, 1)) == NULL)
-        yyerror("Memory allocation failed!");
-
-    // set the AST_NODE's type, assign values to contained NUM_AST_NODE
-
-    node->type = NUM_NODE_TYPE;
-    node->parent = NULL;
-    // don't forget you added this line
-    node->next = NULL;
-    node->symbolTable = NULL;
+    AST_NODE *node = newNode(NUM_NODE_TYPE);
 
     switch (type)
     {
@@ -100,7 +89,7 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type)
             node->data.number.value.dval = value;
             break;
         default:
-            printf("You don't belong in this world, monster!");
+            printf("You don't belong in this world, monster!\n");
     }
 
 
@@ -116,13 +105,7 @@ AST_NODE *createNumberNode(double value, NUM_TYPE type)
 // SEE: AST_NODE, FUNC_AST_NODE, AST_NODE_TYPE.
 AST_NODE *createFunctionNode(char *funcName, AST_NODE *op1)
 {
-    AST_NODE *node;
-    size_t nodeSize;
-
-    // allocate space (or error)
-    nodeSize = sizeof(AST_NODE);
-    if ((node = calloc(nodeSize, 1)) == NULL)
-        yyerror("Memory allocation failed!");
+    AST_NODE *node = newNode(FUNC_NODE_TYPE);
 
     // set the AST_NODE's type, populate contained FUNC_AST_NODE
     // NOTE: you do not need to populate the "ident" field unless the function is type CUSTOM_OPER.
@@ -131,17 +114,13 @@ AST_NODE *createFunctionNode(char *funcName, AST_NODE *op1)
     // For CUSTOM_OPER functions, you should simply assign the "ident" pointer to the passed in funcName.
     // For functions other than CUSTOM_OPER, you should free the funcName after you're assigned the OPER_TYPE.
 
-    // TODO time to fix all of this... again
-
-
-    node->type = FUNC_NODE_TYPE;
     node->data.function.oper = resolveFunc(funcName);
-    node->parent = NULL;
-    node->next = NULL;
-    node->symbolTable = NULL;
 
-    // later: if oper is CUSTOM_OPER store funcName to ident
-    free(funcName);
+    // Now: if oper is CUSTOM_OPER store funcName to ident
+    if (node->data.function.oper == CUSTOM_OPER)
+        node->data.function.ident = funcName;
+    else
+        free(funcName);
 
     // now adds this node as parent of op1 and op2
     node->data.function.opList = op1;
@@ -159,19 +138,9 @@ AST_NODE *createFunctionNode(char *funcName, AST_NODE *op1)
 
 AST_NODE *createSymbolNode(char *ident)
 {
-    AST_NODE *node;
-    size_t nodeSize;
+    AST_NODE *node = newNode(SYMBOL_NODE_TYPE);
 
-    // allocate space (or error)
-    nodeSize = sizeof(AST_NODE);
-    if ((node = calloc(nodeSize, 1)) == NULL)
-        yyerror("Memory allocation failed!");
-
-    node->type = SYMBOL_NODE_TYPE;
-    node->parent = NULL;
     node->data.symbol.ident = ident;
-    node->next = NULL;
-    node->symbolTable = NULL;
 
     return node;
 }
@@ -218,6 +187,7 @@ SYMBOL_TABLE_NODE *createSymbolTableNode(char *type, char *ident, AST_NODE *val)
     // node val points to the s-expression that follows
     node->val = val;
     node->next = NULL;
+    node->sym_type = VARIABLE_TYPE;
     node->val_type = resolveNum(type);
 
     return node;
@@ -232,18 +202,7 @@ SYMBOL_TABLE_NODE *linkLetSection(SYMBOL_TABLE_NODE *head, SYMBOL_TABLE_NODE *ne
 AST_NODE *createCondNode(AST_NODE *conditionsExpr, AST_NODE *truthExpr, AST_NODE *falseExpr)
 {
 
-    AST_NODE *node;
-    size_t nodeSize;
-
-    nodeSize = sizeof(AST_NODE);
-    if ((node = calloc(nodeSize, 1)) == NULL)
-        yyerror("Memory allocation failed!");
-
-    node->type = COND_NODE_TYPE;
-    node->parent = NULL;
-    node->next = NULL;
-    node->symbolTable = NULL;
-
+    AST_NODE *node = newNode(COND_NODE_TYPE);
 
     // Assign nodes to their respective places.
     node->data.condition.condNode = conditionsExpr;
@@ -256,6 +215,67 @@ AST_NODE *createCondNode(AST_NODE *conditionsExpr, AST_NODE *truthExpr, AST_NODE
     return node;
 }
 
+ARG_TABLE_NODE *createArgTableList(char *headName, ARG_TABLE_NODE *list)
+{
+
+    ARG_TABLE_NODE *node;
+    size_t nodeSize;
+
+    // allocate space (or error)
+    nodeSize = sizeof(ARG_TABLE_NODE);
+    if ((node = calloc(nodeSize, 1)) == NULL)
+        yyerror("Memory allocation failed!");
+
+    // copy identifier name and attach new head to the list
+    node->ident = headName;
+    node->next = list;
+    node->argVal = (RET_VAL) {DOUBLE_TYPE, NAN};
+
+    return node;
+}
+
+SYMBOL_TABLE_NODE *createLambdaSymbolTableNode(char *type, char *ident, ARG_TABLE_NODE *argList, AST_NODE *val)
+{
+    SYMBOL_TABLE_NODE *node;
+    size_t nodeSize;
+
+    // allocate space (or error)
+    nodeSize = sizeof(SYMBOL_TABLE_NODE);
+    if ((node = calloc(nodeSize, 1)) == NULL)
+        yyerror("Memory allocation failed!");
+
+    // same assignments from variable Symbol Table Node
+    node->ident = ident;
+    node->val_type = resolveNum(type);
+    node->next = NULL;
+    node->val = val;
+
+    // change: this is instead a lambda, and its value carries the arguments in its argList
+    node->sym_type = LAMBDA_TYPE;
+    val->argTable = argList;
+
+    return node;
+}
+
+
+
+AST_NODE *newNode(AST_NODE_TYPE type)
+{
+    AST_NODE *node;
+    size_t nodeSize;
+
+    nodeSize = sizeof(AST_NODE);
+    if ((node = calloc(nodeSize, 1)) == NULL)
+        yyerror("Memory allocation failed!");
+
+    node->type = type;
+    node->parent = NULL;
+    node->next = NULL;
+    node->symbolTable = NULL;
+    node->argTable = NULL;
+
+    return node;
+}
 
 // Called after execution is done on the base of the tree.
 // (see the program production in ciLisp.y)
@@ -264,8 +284,7 @@ AST_NODE *createCondNode(AST_NODE *conditionsExpr, AST_NODE *truthExpr, AST_NODE
 void freeNode(AST_NODE *node)
 {
     // TODO time to expand (maybe?)
-    //  2) does the new COND_AST_NODE need special treatment? - yes, done
-    //  probably need to just free its three pointed to nodes recursively
+    //  1) now if an AST node carries an argList, the identifier and the node itself must be freed - done
     if (!node)
         return;
 
@@ -313,6 +332,16 @@ void freeNode(AST_NODE *node)
         free(prevNode);
     }
 
+    ARG_TABLE_NODE *currArg = node->argTable;
+    ARG_TABLE_NODE *prevArg;
+    while (currArg !=NULL)
+    {
+        prevArg = currArg;
+        currArg = currArg->next;
+
+        free(prevArg->ident);
+        free(prevArg);
+    }
 
     free(node);
 }
@@ -343,6 +372,7 @@ RET_VAL eval(AST_NODE *node)
             break;
         case COND_NODE_TYPE:
             result = evalCondNode(&node->data.condition);
+            break;
         default:
             yyerror("Invalid AST_NODE_TYPE, probably invalid writes somewhere!");
     }
@@ -392,8 +422,6 @@ RET_VAL evalFuncNode(AST_NODE *node)
     // populate result with the result of running the function on its operands.
     // SEE: AST_NODE, AST_NODE_TYPE, FUNC_AST_NODE
 
-
-    // TODO add the last few functions - done
 
     switch (funcNode->oper)
     {
@@ -463,6 +491,9 @@ RET_VAL evalFuncNode(AST_NODE *node)
         case GREATER_OPER:
             result = helperGreaterOper(funcNode->opList);
             break;
+        case CUSTOM_OPER:
+            result = helperCustomOper(node);
+            break;
         default:
             printf("How did we get here?");
             break;
@@ -481,61 +512,91 @@ RET_VAL evalSymbolNode(AST_NODE *symbolNode)
 
     char *symbol = symbolNode->data.symbol.ident;
     AST_NODE *currNode = symbolNode;
-    SYMBOL_TABLE_NODE *currTable;
+    SYMBOL_TABLE_NODE *currSymbol;
+    ARG_TABLE_NODE *currArg;
+
 
     while (currNode != NULL)
     {
-        currTable = currNode->symbolTable;
-        while (currTable != NULL)
+        currSymbol = currNode->symbolTable;
+        while (currSymbol != NULL)
         {
-            if (strcmp(symbol, currTable->ident) == 0)
+            if (!strcmp(symbol, currSymbol->ident) && (currSymbol->sym_type == VARIABLE_TYPE))
             {
-                result = eval(currTable->val);
-
-                // This whole block changes the returned result depending on the casted type of this symbol AST Node
-                switch (currTable->val_type)
-                {
-                    case NO_TYPE:
-                        return result;
-                    case INT_TYPE:
-                        switch (result.type)
-                        {
-                            case INT_TYPE:
-                                break;
-                            case DOUBLE_TYPE:
-                                printf("WARNING: precision loss in the assignment for variable \"%s\"\n", currTable->ident);
-                                result.type = INT_TYPE;
-                                result.value.ival = lround(result.value.dval);
-                                break;
-                            default:
-                                yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-                        }
-                        break;
-
-                    case DOUBLE_TYPE:
-                        switch (result.type)
-                        {
-                            case INT_TYPE:
-                                result.type = DOUBLE_TYPE;
-                                result.value.dval = (double) result.value.ival;
-                                break;
-                            case DOUBLE_TYPE:
-                                break;
-                            default:
-                                yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-                        }
-                        break;
-
-                    default:
-                        yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
-                } // END of type cast adjustments
+                result = evalSymbolNodeHelper(currSymbol);
 
                 return result;
             }
-            currTable = currTable->next;
-        }
+            currSymbol = currSymbol->next;
+        } // END of Symbol Table Search
+
+        // Since args are now distinct from symbols, this checks the argTable after checking the symbol table
+        currArg = currNode->argTable;
+        while (currArg != NULL)
+        {
+            if (!strcmp(symbol, currArg->ident))
+            {
+                result = currArg->argVal;
+
+                return result;
+            }
+
+            currArg = currArg->next;
+        } // END of Arg Table Search
+
+
         currNode = currNode->parent;
-    }
+    } // END of Search
+
+    return result;
+}
+
+
+RET_VAL evalSymbolNodeHelper(SYMBOL_TABLE_NODE *symbol)
+{
+
+    if (!symbol)
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+
+    RET_VAL result = eval(symbol->val);
+
+    // This whole block changes the returned result depending on the casted type of this symbol AST Node
+    switch (symbol->val_type)
+    {
+        case NO_TYPE:
+            return result;
+        case INT_TYPE:
+            switch (result.type)
+            {
+                case INT_TYPE:
+                    break;
+                case DOUBLE_TYPE:
+                    printf("WARNING: precision loss in the assignment for variable \"%s\"\n", symbol->ident);
+                    result.type = INT_TYPE;
+                    result.value.ival = lround(result.value.dval);
+                    break;
+                default:
+                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+            }
+            break;
+
+        case DOUBLE_TYPE:
+            switch (result.type)
+            {
+                case INT_TYPE:
+                    result.type = DOUBLE_TYPE;
+                    result.value.dval = (double) result.value.ival;
+                    break;
+                case DOUBLE_TYPE:
+                    break;
+                default:
+                    yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+            }
+            break;
+
+        default:
+            yyerror("Invalid NUM_NODE_TYPE, probably invalid writes somewhere!");
+    } // END of type cast adjustments
 
     return result;
 }
@@ -1607,4 +1668,138 @@ RET_VAL helperGreaterOper(AST_NODE *op1)
     }
 
     return result;
+}
+
+// TODO newest helper function: helper for Lambda Functions
+
+RET_VAL helperCustomOper(AST_NODE *root)
+{
+
+    if (!root)
+        return (RET_VAL){DOUBLE_TYPE, NAN};
+
+    RET_VAL result = {DOUBLE_TYPE, NAN};
+
+    SYMBOL_TABLE_NODE *lambdaSeeker;
+    AST_NODE *lambdaFunctionSeeker = root;
+    char *lambdaName = root->data.function.ident;
+
+    // Step 1: find the Symbol Table Node for the given lambda and its respective function (same as eval Symbol AST)
+    while (lambdaFunctionSeeker != NULL)
+    {
+        lambdaSeeker = lambdaFunctionSeeker->symbolTable;
+        while (lambdaSeeker != NULL)
+        {
+            // when lambda Symbol table node is found
+            // Step 2: Evaluate all necessary parameters for the function
+            if (!strcmp(lambdaSeeker->ident, lambdaName) && (lambdaSeeker->sym_type == LAMBDA_TYPE))
+            {
+                lambdaFunctionSeeker = lambdaSeeker->val;
+                STACK_NODE *argValues = createStackNodes(lambdaFunctionSeeker, root->data.function.opList);
+                if (argValues == NULL)
+                    return (RET_VAL){DOUBLE_TYPE, NAN};
+                
+                attachStackNodes(lambdaFunctionSeeker->argTable, argValues);
+
+                // Step 3: evaluate lambda's function
+                result = eval(lambdaFunctionSeeker);
+                return result;
+            }
+            lambdaSeeker = lambdaSeeker->next;
+        } // END of Symbol Table traversal
+
+        lambdaFunctionSeeker = lambdaFunctionSeeker->parent;
+    } // END of AST node traversal
+
+    return result;
+}
+
+STACK_NODE *createStackNodes(AST_NODE *lambdaFunc, AST_NODE *paramList)
+{
+    if (paramList == NULL) {
+        yyerror("No parameters entered for lambda function\n");
+        return NULL;
+    }
+
+    if (lambdaFunc == NULL) {
+        yyerror("lambda function contains no parameters. Invalid writes somewhere\n");
+        return NULL;
+    }
+
+    STACK_NODE *head;
+    size_t nodeSize;
+
+    // allocate space (or error)
+    nodeSize = sizeof(STACK_NODE);
+    if ((head = calloc(nodeSize, 1)) == NULL)
+        yyerror("Memory allocation failed!");
+
+    // evaluate the first node
+    head->val = eval(paramList);
+
+
+    // evaluate one parameter per lambda argument and create a stack node for it
+    ARG_TABLE_NODE *currArg = lambdaFunc->argTable->next;
+    AST_NODE * currOp = paramList->next;
+
+    STACK_NODE *tail = head;
+
+    while ((currArg != NULL) && (currOp != NULL))
+    {
+
+        if ((tail->next = calloc(nodeSize, 1)) == NULL)
+            yyerror("Memory allocation failed!");
+
+        tail = tail->next;
+        tail->next = NULL;
+        tail->val = eval(currOp);
+
+        currArg = currArg->next;
+        currOp = currOp->next;
+    }
+
+
+    // If there are too few or too many arguments, print an error
+    if ((currArg == NULL) && (currOp != NULL))
+    {
+        yyerror("Too many parameters for lambda function.\n\t\tExtra parameters will be ignored\n");
+    }
+    else if (currArg != NULL)
+    {
+        yyerror("Too few parameters for lambda function.\t\tMissing parameters will be defaulted to 1\n");
+        while (currArg != NULL)
+        {
+
+            if ((tail->next = calloc(nodeSize, 1)) == NULL)
+                yyerror("Memory allocation failed!");
+
+            tail = tail->next;
+            tail->next = NULL;
+            tail->val = (RET_VAL) {INT_TYPE, 1};
+
+            currArg = currArg->next;
+        }
+    }
+
+    return head;
+}
+
+void attachStackNodes(ARG_TABLE_NODE *lambdaArgs, STACK_NODE *paramVals)
+{
+    // assign retrieved values to their respective args
+    ARG_TABLE_NODE *currArg = lambdaArgs;
+    STACK_NODE *currStackNode = paramVals;
+    STACK_NODE *prevStackNode;
+
+    while ((currArg != NULL))
+    {
+        prevStackNode = currStackNode;
+
+        currArg->argVal = currStackNode->val;
+
+        // move to next and free the stack node
+        currArg = currArg->next;
+        currStackNode = currStackNode->next;
+        free(prevStackNode);
+    }
 }

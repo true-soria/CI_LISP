@@ -7,14 +7,16 @@
     char *sval;
     struct ast_node *astNode;
     struct symbol_table_node *symNode;
+    struct arg_table_node *argNode;
 }
 
 %token <sval> FUNC SYMBOL TYPE
 %token <dval> INT DOUBLE
-%token LPAREN RPAREN LET COND EOL QUIT
+%token LPAREN RPAREN LET COND LAMBDA EOL QUIT
 
-%type <astNode> s_expr f_expr number symbol s_expr_list
+%type <astNode> s_expr f_expr number s_expr_list
 %type <symNode> let_elem let_section let_list
+%type <argNode> arg_list
 
 
 %%
@@ -33,11 +35,12 @@ s_expr:
         fprintf(stderr, "yacc: s_expr ::= number\n");
         $$ = $1;
     }
-    | symbol {
-    	fprintf(stderr, "yacc: s_expr ::= symbol\n");
-	$$ = $1;
+    | SYMBOL {
+    	fprintf(stderr, "yacc: s_expr ::= SYMBOL\n");
+	$$ = createSymbolNode($1);
     }
     | f_expr {
+	fprintf(stderr, "yacc: s_expr ::= f_expr\n");
         $$ = $1;
     }
     | QUIT {
@@ -56,6 +59,10 @@ s_expr:
     | LPAREN COND s_expr s_expr s_expr RPAREN {
     	fprintf(stderr, "yacc: s_expr ::= LPAREN COND s_expr s_expr s_expr RPAREN\n");
     	$$ = createCondNode ($3, $4, $5);
+    }
+    | LPAREN s_expr RPAREN {
+	fprintf(stderr, "yacc: s_expr ::= LPAREN s_expr RPAREN\n");
+        $$ = $2;
     };
 
 s_expr_list:
@@ -90,10 +97,7 @@ let_section:
     LPAREN let_list RPAREN {
     	fprintf(stderr, "yacc: let_section ::= LPAREN let_list RPAREN\n");
     	$$ = $2;
-    };/* figure this out later
-    | nothing {
-	fprintf(stderr, "yacc: let_section ::= \n");
-        };*/
+    };
 
 let_list:
     LET let_elem {
@@ -101,11 +105,8 @@ let_list:
     	$$ = $2;
     }
     | let_list let_elem {
-    // let_list should add let_elem in front of it (in the list)
-    // i.e. let_list is the head of a list, let_elem is a new node to be added to the list
-
-    fprintf(stderr, "yacc: let_list ::= let_list let_elem\n");
-    $$ = linkLetSection($1, $2);
+    	fprintf(stderr, "yacc: let_list ::= let_list let_elem\n");
+    	$$ = linkLetSection($1, $2);
     }
 
 let_elem:
@@ -116,12 +117,24 @@ let_elem:
     | LPAREN TYPE SYMBOL s_expr RPAREN {
         fprintf(stderr, "yacc: let_elem ::= LPAREN TYPE SYMBOL s_expr RPAREN\n");
         $$ = createSymbolTableNode($2, $3, $4);
+    }
+    | LPAREN SYMBOL LAMBDA LPAREN arg_list RPAREN s_expr RPAREN {
+        fprintf(stderr, "yacc: let_elem ::= LPAREN SYMBOL LAMBDA LPAREN arg_list RPAREN s_expr RPAREN\n");
+        $$ = createLambdaSymbolTableNode("", $2, $5, $7);
+    }
+    | LPAREN TYPE SYMBOL LAMBDA LPAREN arg_list RPAREN s_expr RPAREN {
+        fprintf(stderr, "yacc: let_elem ::= LPAREN TYPE SYMBOL LAMBDA LPAREN arg_list RPAREN s_expr RPAREN\n");
+        $$ = createLambdaSymbolTableNode($2, $3, $6, $8);
     };
 
-symbol:
-    SYMBOL {
-	fprintf(stderr, "yacc: symbol ::= SYMBOL\n");
-	$$ = createSymbolNode($1);
+arg_list:
+    SYMBOL arg_list {
+    	fprintf(stderr, "yacc: arg_list ::= SYMBOL arg_list\n");
+	$$ = createArgTableList($1, $2);
+    }
+    | SYMBOL {
+    	fprintf(stderr, "yacc: arg_list ::= SYMBOL\n");
+	$$ = createArgTableList($1, NULL);
     }
 
 f_expr:
@@ -132,6 +145,10 @@ f_expr:
     | LPAREN FUNC RPAREN {
     	fprintf(stderr, "yacc: s_expr ::= LPAREN FUNC RPAREN\n");
     	$$ = createFunctionNode($2, NULL);
+    }
+    | LPAREN SYMBOL s_expr_list RPAREN {
+            fprintf(stderr, "yacc: s_expr ::= LPAREN SYMBOL s_expr_list RPAREN\n");
+            $$ = createFunctionNode($2, $3);
     }
 %%
 

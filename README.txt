@@ -34,3 +34,18 @@ Task 4 Complete
  - Improved print function's formatting. It now prints after the evaluation of the whole statement
  - Tested with and without debugging
  - works fine
+
+ 12/6/19
+ Task 7/8
+ - Works
+ - A lot of quality of life improvements.
+ 	- the language now accepts needlessly added parentheses
+ 	- rather than attaching a stack of values to the value pointer of arguments,
+ 	the values are processed and added to a stack of RET_VALs that are attached to 
+ 	arguments after all of them have been processed. This means it should work with
+ 	task 9.
+
+12/6/19
+Task 9
+- Works
+- tested against the two functions supplied and a legitimate definition of a countdown.
